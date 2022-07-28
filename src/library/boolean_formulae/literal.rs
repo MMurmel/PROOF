@@ -1,4 +1,8 @@
 //! Provides representation and tools for boolean literals.
+use serde::{
+	Serialize,
+	Deserialize,
+};
 
 use crate::boolean_formulae::data::{
 	AtomID,
@@ -11,7 +15,7 @@ use crate::boolean_formulae::evaluation::{
 
 /// A representation for logical literals,
 /// i.e. an atom or its negation.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Literal {
 	/// The variable from which the literal is created.
 	atom_id: AtomID,

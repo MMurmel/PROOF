@@ -1,7 +1,14 @@
 //! Provides representation and tools for clauses of disjunctive normal forms,
 //! i.e. conjunctions of boolean literals.
 
-use crate::boolean_formulae::data::Sample;
+use serde::{
+	Serialize,
+	Deserialize,
+};
+use crate::boolean_formulae::data::{
+	AtomID,
+	Sample,
+};
 use crate::boolean_formulae::evaluation::{
 	Evaluate,
 	ErrorKind,
@@ -9,7 +16,7 @@ use crate::boolean_formulae::evaluation::{
 use crate::boolean_formulae::literal::Literal;
 
 /// The representation of a DNF clause, i.e. a conjunction of literals.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Clause {
 	/// The conjunction of literals.
 	literals: Vec<Literal>,
@@ -23,6 +30,24 @@ impl Clause {
 	/// Returns the length of the `Clause`.
 	#[must_use]
 	pub fn length(&self) -> usize { self.literals.len() }
+
+	/// Returns the literals of the `Clause`.
+	#[must_use]
+	pub fn literals(&self) -> &[Literal] { self.literals.as_slice() }
+
+	/// Returns the maximal `AtomID` for which a literal is present in the `Clause`.
+	#[must_use]
+	pub fn maximal_id(&self) -> AtomID { self.literals.iter().map(Literal::atom_id).max().unwrap_or(0) }
+
+	/// Removes the literal with the given `AtomID` from the `Clause`.
+	pub fn remove_literal(&mut self, atom_id: AtomID) {
+		match self.literals.iter().position(|x| x.atom_id() == atom_id) {
+			Some(index) => {
+				self.literals.remove(index);
+			},
+			None => {},
+		}
+	}
 }
 
 impl Evaluate for Clause {

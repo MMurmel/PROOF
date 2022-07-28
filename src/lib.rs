@@ -26,6 +26,8 @@
 //!
 //! This contains all data structures and algorithms used for PROOF.
 
+extern crate core;
+
 /// ## The Application Library
 ///
 /// While `lib.rs` is automatically identified by `cargo` to be a library, we crate the
@@ -37,4 +39,5 @@ mod library;
 pub use library::{
 	arguments,
 	boolean_formulae,
+	algorithms,
 };

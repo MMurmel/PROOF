@@ -1,10 +1,14 @@
 //! Provides representation of boolean data over multidimensional feature-space.
 
+use serde::{
+	Serialize,
+	Deserialize,
+};
 /// Each atom is identified by a single number.
 pub type AtomID = u32;
 
 /// The general struct to represent a manifestation of the feature space.
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Sample {
 	/// The data of the sample.
 	features: Vec<bool>,
