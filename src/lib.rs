@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 // Clippy lint target one. Enables all lints that are on by
 // default (correctness, suspicious, style, complexity, perf) .
 #![warn(clippy::all)]
@@ -24,16 +22,16 @@
 // covered previously
 #![warn(missing_debug_implementations)]
 
-//! # _yourprojectname_
+//! # PROOF library
 //!
-//! TODO
+//! This contains all data structures and algorithms used for PROOF.
 
 /// ## The Application Library
 ///
 /// While `lib.rs` is automatically identified by `cargo` to be a library, we crate the
 /// directory `library` to organize our actual library. It is important that `library` is
 /// owned by `lib.rs` (`mod library;`), and not by `main.rs`. This way, `main.rs` can call
-/// re-exported modules with `use yourprojectname::<RE-EXPORTED MODULE>`.
+/// re-exported modules with `use PROOF::<RE-EXPORTED MODULE>`.
 mod library;
 
 pub use library::{arguments,};

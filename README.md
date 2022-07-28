@@ -1,13 +1,6 @@
 ## Copyright
 
-This template is a modified version of [Georg Lauterbach]'s [themis] adjusted to my needs. 
-
-Changes include:
-- [X] ~~Switched to stable rust~~
-- [X] Adjusted preference settings, e.g. in `.editorconfig`
-- [X] simplified logging
-- [X] Removed shell scripting tools
-- [X] Removed [Georg Lauterbach] as fundable creator
+This project is created on the basis of a [custom] version of [Georg Lauterbach]'s [themis] template for command line rust programs.
 
 ## Licensing
 
@@ -15,6 +8,7 @@ This project is licensed under the [GNU General Public License v3], except for t
 
 [//]: # (Links)
 
+[custom] : https://github.com/MMurmel/themis
 [Georg Lauterbach]: https://github.com/georglauterbach
 [themis]: https://github.com/georglauterbach/themis
 [GNU General Public License v3]: https://www.gnu.org/licenses/gpl-3.0.txt

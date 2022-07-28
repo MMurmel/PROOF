@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
-
 // Clippy lint target one. Enables all lints that are on by
 // default (correctness, suspicious, style, complexity, perf) .
 #![warn(clippy::all)]
@@ -24,12 +22,13 @@
 // covered previously
 #![warn(missing_debug_implementations)]
 
-//! # _yourprojectname_
+//! # _PROOF_
 //!
-//! TODO
+//! My implementation for a research project on locals search
+//! for learning partial boolean functions.
 
 use log::{info,};
-use yourprojectname::arguments::Arguments;
+use proof::arguments::Arguments;
 
 /// ### `main`
 ///
@@ -41,5 +40,5 @@ fn main() {
 		.filter_level(arguments.log_level())
 		.init();
 
-	info!("Welcome to yourprojectname");
+	info!("Welcome to PROOF");
 }

@@ -7,7 +7,7 @@ use clap::Parser;
 #[allow(missing_docs)]
 #[allow(clippy::missing_docs_in_private_items)]
 #[derive(Parser, Debug)]
-#[clap(author, version, about, name = "yourprojectname")]
+#[clap(author, version, about, name = "proof")]
 pub struct Arguments {
 	#[clap(flatten)]
 	verbosity: clap_verbosity_flag::Verbosity,

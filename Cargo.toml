@@ -3,25 +3,31 @@
 # -----------------------------------------------
 
 [package]
-name = 'yourprojectname'
+name = 'proof'
 version = '0.1.0'
 edition = '2021'
 
 authors = ['Maximilian Moeller']
 
-description = ''
+description = 'Implementation for my research project on local search for learning PaRtial bOOlean Functions.'
 documentation = ''
 license = 'GPL-3.0'
 readme = 'README.md'
 
 homepage = ''
-repository = ''
+repository = 'https://github.com/MMurmel/PROOF'
 
 keywords = [
-    'template',
+    'local_search',
+    'binary_fuctions',
+    'partial_functions',
+    'machine_learning',
 ]
 
 categories = [
+    'algorithms',
+    'data-structures',
+    'science',
     'command-line-utilities'
 ]
 
