@@ -34,4 +34,7 @@
 /// re-exported modules with `use PROOF::<RE-EXPORTED MODULE>`.
 mod library;
 
-pub use library::{arguments,};
+pub use library::{
+	arguments,
+	boolean_formulae,
+};
