@@ -11,7 +11,7 @@ use crate::boolean_formulae::evaluation::{
 
 /// A representation for logical literals,
 /// i.e. an atom or its negation.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Literal {
 	/// The variable from which the literal is created.
 	atom_id: AtomID,

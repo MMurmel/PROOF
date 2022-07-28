@@ -1,4 +1,4 @@
-//! Representation of boolean data over multidimensional feature-space.
+//! Provides representation of boolean data over multidimensional feature-space.
 
 /// Each atom is identified by a single number.
 pub type AtomID = u32;

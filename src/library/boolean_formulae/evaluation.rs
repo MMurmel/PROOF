@@ -45,7 +45,7 @@ impl Display for ErrorKind {
 impl std::error::Error for ErrorKind {}
 
 /// The general semantic of everything that can be evaluated under a variable assignment
-/// (i.e. data).
+/// (e.g. Literals, Clauses and DNFs).
 pub trait Evaluate {
 	/// Evaluates itself under the given variable assignment.
 	///

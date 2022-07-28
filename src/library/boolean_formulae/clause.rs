@@ -1,4 +1,4 @@
-//! Representation and tools for clauses of disjunctive normal forms,
+//! Provides representation and tools for clauses of disjunctive normal forms,
 //! i.e. conjunctions of boolean literals.
 
 use crate::boolean_formulae::data::Sample;
@@ -9,7 +9,7 @@ use crate::boolean_formulae::evaluation::{
 use crate::boolean_formulae::literal::Literal;
 
 /// The representation of a DNF clause, i.e. a conjunction of literals.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Clause {
 	/// The conjunction of literals.
 	literals: Vec<Literal>,
@@ -20,7 +20,7 @@ impl Clause {
 	#[must_use]
 	pub fn new(literals: Vec<Literal>) -> Self { Self { literals } }
 
-	/// Returns the length of the clause.
+	/// Returns the length of the `Clause`.
 	#[must_use]
 	pub fn length(&self) -> usize { self.literals.len() }
 }
