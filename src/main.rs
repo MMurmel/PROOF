@@ -27,12 +27,14 @@
 //! My implementation for a research project on locals search
 //! for learning partial boolean functions.
 
+use std::io::{
+	BufRead,
+	stdin,
+};
 use log::{info,};
 use proof::arguments::Arguments;
-use proof::boolean_formulae::data::AtomID;
-use proof::boolean_formulae::literal::Literal;
+use proof::boolean_formulae::data::{Sample,};
 
-use rand::Rng;
 use proof::boolean_formulae::clause::Clause;
 use proof::boolean_formulae::dnf::DNF;
 
@@ -42,8 +44,10 @@ use proof::algorithms::visualization::to_image::{ToImage,};
 ///
 /// A simple, plain old `main` function. Nothing mysterious here.
 fn main() {
-	const WIDTH: u32 = 20;
-	const HEIGHT: u32 = 20;
+	/// Width of images
+	const WIDTH: u32 = 28;
+	/// Height of images
+	const HEIGHT: u32 = 28;
 
 	let arguments = Arguments::cli_args();
 
@@ -52,30 +56,26 @@ fn main() {
 		.init();
 
 	info!("Welcome to PROOF");
-	let mut rng = rand::thread_rng();
-	let mut clauses: Vec<Clause> = Vec::new();
-	for _ in 0..10 {
-		let literals: Vec<Literal> = (0..399)
-			.map(|x| Literal::new(AtomID::try_from(x).unwrap(), rng.gen_bool(0.5)))
-			.collect();
-		clauses.push(Clause::new(literals));
-	}
 
-	for clause in &mut clauses.iter_mut().skip(5) {
-		clause.remove_literal(255);
-	}
+	let (positives, negatives): (Vec<_>, Vec<_>) = stdin()
+		.lock()
+		.lines()
+		.map(|line| serde_json::from_str(&line.unwrap()).unwrap())
+		.partition(Sample::label);
 
-	let dnf = DNF::new(clauses);
+	let pos_dnf = DNF::new(positives.iter().map(Clause::from).collect());
+	let neg_dnf = DNF::new(negatives.iter().map(Clause::from).collect());
 
-	println!("{}", serde_json::to_string(&dnf).unwrap());
+	println!("({},{})", pos_dnf.length(), neg_dnf.length());
 
-	for (index, clause) in dnf.clauses().iter().enumerate() {
-		clause
-			.to_image(WIDTH, HEIGHT)
-			.unwrap()
-			.save(format!("clause{}.png", index))
-			.unwrap();
-	}
-
-	dnf.to_image(WIDTH, HEIGHT).unwrap().save("average.png").unwrap();
+	pos_dnf
+		.to_image(WIDTH, HEIGHT)
+		.unwrap()
+		.save("positives.png")
+		.unwrap();
+	neg_dnf
+		.to_image(WIDTH, HEIGHT)
+		.unwrap()
+		.save("negatives.png")
+		.unwrap();
 }
