@@ -35,10 +35,6 @@ impl Clause {
 	#[must_use]
 	pub fn literals(&self) -> &[Literal] { self.literals.as_slice() }
 
-	/// Returns the maximal `AtomID` for which a literal is present in the `Clause`.
-	#[must_use]
-	pub fn maximal_id(&self) -> AtomID { self.literals.iter().map(Literal::atom_id).max().unwrap_or(0) }
-
 	/// Removes the literal with the given `AtomID` from the `Clause`.
 	pub fn remove_literal(&mut self, atom_id: AtomID) {
 		match self.literals.iter().position(|x| x.atom_id() == atom_id) {

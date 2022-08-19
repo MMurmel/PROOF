@@ -34,10 +34,6 @@ impl DNF {
 	/// Returns the clauses of the `DNF`.
 	#[must_use]
 	pub fn clauses(&self) -> &[Clause] { self.clauses.as_slice() }
-
-	/// Returns the maximal `AtomID` for which a literal is present in the DNF.
-	#[must_use]
-	pub fn maximal_id(&self) -> AtomID { self.clauses.iter().map(Clause::maximal_id).max().unwrap_or(0) }
 }
 
 impl Evaluate for DNF {
