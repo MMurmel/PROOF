@@ -60,3 +60,14 @@ impl Evaluate for Clause {
 		Ok(values?.iter().all(|&x| x))
 	}
 }
+
+impl From<&Sample> for Clause {
+	fn from(sample: &Sample) -> Self {
+		let mut literals = Vec::new();
+		for (feature_id, feature_value) in sample.features().iter().enumerate() {
+			literals.push(Literal::new(feature_id as AtomID, *feature_value));
+		}
+
+		Self { literals }
+	}
+}

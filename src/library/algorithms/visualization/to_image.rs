@@ -57,6 +57,9 @@ impl ToImage for Clause {
 impl ToImage for DNF {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let clause_count = self.length() as u32;
+		if clause_count == 1 {
+			return self.clauses().get(0).unwrap().to_image(width, height);
+		}
 		let mut helper_map: HashMap<(u32, u32), (u32, u32, u32)> = HashMap::new();
 
 		let mut image = RgbImage::new(width, height);
