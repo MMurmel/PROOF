@@ -15,23 +15,32 @@ class Sample:
     features: List[bool]
 
 
-def prepare_data(image_file, label_file, out_file, line_count):
+def prepare_data(image_file, label_file, out_file, sample_count):
     with gzip.open(image_file, "rb") as images, gzip.open(label_file, "rb") as labels, open(out_file, "w") as output_file:
+        # Skip header data
         images.read(16)
         labels.read(8)
+
         output = []
 
-        for i in range(line_count):
+        for i in range(sample_count):
+            # read label
             label = ord(labels.read(1))
+            # labels other than 1 and 7 can be ignored
             if label != 1 and label != 7:
+                # skip bytes in image file accordingly
+                images.read(28*28)
                 continue
+            # convert label to boolean
             label = (label == 1)
+            # read features
             features = []
-            sample = Sample(label=label, features=features)
             for j in range(28*28):
                 pixel = ord(images.read(1))
                 pixel = (pixel >= 128)
-                sample.features.append(pixel)
+                features.append(pixel)
+            # create sample and add to output
+            sample = Sample(label=label, features=features)
             output.append(sample)
 
         for s in output:
@@ -40,5 +49,5 @@ def prepare_data(image_file, label_file, out_file, line_count):
 
 prepare_data("original/t10k-images-idx3-ubyte.gz",
              "original/t10k-labels-idx1-ubyte.gz",
-             "output.json",
+             "prepared_data.json",
              10000)
