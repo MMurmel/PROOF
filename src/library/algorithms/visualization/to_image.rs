@@ -40,7 +40,7 @@ impl ToImage for Clause {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
 
-		for literal in self.literals() {
+		for literal in self.literals().iter().filter_map(|&x| x) {
 			let atom_id = literal.atom_id();
 			if atom_id >= width * height {
 				return Err(ErrorKind::DimensionsTooSmall);

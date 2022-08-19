@@ -8,10 +8,8 @@ use crate::boolean_formulae::data::{
 	AtomID,
 	Sample,
 };
-use crate::boolean_formulae::evaluation::{
-	Evaluate,
-	ErrorKind,
-};
+use crate::boolean_formulae::ErrorKind;
+use crate::boolean_formulae::evaluation::{Evaluate,};
 
 /// A representation for logical literals,
 /// i.e. an atom or its negation.

@@ -6,14 +6,9 @@ use serde::{
 };
 
 use crate::boolean_formulae::clause::Clause;
-use crate::boolean_formulae::data::{
-	AtomID,
-	Sample,
-};
-use crate::boolean_formulae::evaluation::{
-	ErrorKind,
-	Evaluate,
-};
+use crate::boolean_formulae::data::{Sample,};
+use crate::boolean_formulae::ErrorKind;
+use crate::boolean_formulae::evaluation::{Evaluate,};
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 /// The representation of a DNF, i.e. a disjunction of clauses.

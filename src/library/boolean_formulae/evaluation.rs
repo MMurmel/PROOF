@@ -1,48 +1,7 @@
 //! Provides the `Evaluate` trait every boolean formula should implement.
-use std::fmt::{
-	Debug,
-	Display,
-	Formatter,
-};
-use crate::boolean_formulae::data::{
-	AtomID,
-	Sample,
-};
 
-/// Error Enum for everything that could go wrong during evaluation of a boolean formula
-/// under a given variable assignment
-#[derive(PartialEq, Eq)]
-pub enum ErrorKind {
-	/// There is no data for one or more of the evaluated literals.
-	InsufficientData(AtomID),
-}
-
-impl Debug for ErrorKind {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Self::InsufficientData(id) => {
-				write!(f, "Insufficient data at AtomID {}", id)
-			},
-		}
-	}
-}
-
-impl Display for ErrorKind {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-		match self {
-			Self::InsufficientData(id) => {
-				write!(
-					f,
-					"The data you provided could not be evaluated, because it lacked an entry for the {} \
-					 st/nd/th variable.",
-					id
-				)
-			},
-		}
-	}
-}
-
-impl std::error::Error for ErrorKind {}
+use crate::boolean_formulae::data::{Sample,};
+use crate::boolean_formulae::ErrorKind;
 
 /// The general semantic of everything that can be evaluated under a variable assignment
 /// (e.g. Literals, Clauses and DNFs).
