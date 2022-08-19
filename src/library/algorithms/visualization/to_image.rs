@@ -9,8 +9,13 @@ use image::{
 const RED: (u8, u8, u8) = (255, 0, 0);
 /// Green in rgb.
 const GREEN: (u8, u8, u8) = (0, 255, 0);
+/// White in rgb.
+const WHITE: (u8, u8, u8) = (0, 0, 0);
+/// Black in rgb.
+const BLACK: (u8, u8, u8) = (255, 255, 255);
 
 use crate::boolean_formulae::clause::Clause;
+use crate::boolean_formulae::data::Sample;
 use crate::boolean_formulae::dnf::DNF;
 
 /// Error Enum for converting logic formulas into images.
@@ -86,6 +91,25 @@ impl ToImage for DNF {
 			image.put_pixel(x, y, Rgb::from([r, g, b]));
 		}
 
+		Ok(image)
+	}
+}
+
+impl ToImage for Sample {
+	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
+		let mut image = RgbImage::new(width, height);
+
+		for (id, literal) in self.features().iter().enumerate() {
+			#[allow(clippy::cast_possible_truncation)]
+			let id = id as u32;
+			if id >= width * height {
+				return Err(ErrorKind::DimensionsTooSmall);
+			}
+			let column = id % width;
+			let row = id / width;
+			let color: (u8, u8, u8) = if *literal { WHITE } else { BLACK };
+			image.put_pixel(column, row, Rgb::from([color.0, color.1, color.2]));
+		}
 		Ok(image)
 	}
 }
