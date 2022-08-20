@@ -1,6 +1,7 @@
 //! Provides representation and tools for clauses of disjunctive normal forms,
 //! i.e. conjunctions of boolean literals.
 
+use log::trace;
 use serde::{
 	Serialize,
 	Deserialize,
@@ -42,13 +43,34 @@ impl Clause {
 	/// If the `AtomID` is larger than the length of the clause,
 	/// `Err(ErrorKind::AtomIdOutOfScope(atom_id))` is returned.
 	pub fn remove_literal(&mut self, atom_id: AtomID) -> Result<Option<Literal>, ErrorKind> {
+		trace!("Trying to remove literal with AtomID {} from a clause.", atom_id);
 		match self.literals.get_mut(atom_id as usize) {
-			Some(lit) => {
-				let helper = *lit;
-				*lit = None;
-				Ok(helper)
+			Some(lit) => match lit {
+				Some(value) => {
+					trace!(
+						"Clause contained a literal with AtomID {} and polarity <{}>, removed successfully.",
+						atom_id,
+						value.parity()
+					);
+					let helper = *value;
+					*lit = None;
+					Ok(Some(helper))
+				},
+				None => {
+					trace!(
+						"Clause did not contain a literal with AtomID {}, but was in viable range.",
+						atom_id
+					);
+					Ok(None)
+				},
 			},
-			None => Err(ErrorKind::AtomIdOutOfScope(atom_id)),
+			None => {
+				trace!(
+					"AtomID {} was out of range for clause, returning an Error.",
+					atom_id
+				);
+				Err(ErrorKind::AtomIdOutOfScope(atom_id))
+			},
 		}
 	}
 

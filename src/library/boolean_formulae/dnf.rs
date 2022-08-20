@@ -29,6 +29,10 @@ impl DNF {
 	/// Returns the clauses of the `DNF`.
 	#[must_use]
 	pub fn clauses(&self) -> &[Clause] { self.clauses.as_slice() }
+
+	/// Returns a mutable reference to the clauses of the `DNF`.
+	#[must_use]
+	pub fn mut_clauses(&mut self) -> &mut [Clause] { self.clauses.as_mut_slice() }
 }
 
 impl Evaluate for DNF {
