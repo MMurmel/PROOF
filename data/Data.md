@@ -25,3 +25,8 @@ Most significantly, perhaps, is the change from binary to plaintext data in json
 simplifying access for the programmer.
 The format will be the auto-generated json by the serialization framework [serde](https://github.com/serde-rs/json),
 e.g. `{"label":false,"features":[true,true,false]}`.
+
+### Recreating
+In order to (re)create the data used for this project
+you must create an anaconda environment from the `environment.yaml`
+and execute the `convert_data.py` from within the `data` directory.
