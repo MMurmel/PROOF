@@ -9,17 +9,17 @@ use proof::boolean_formulae::literal::Literal;
 
 #[test]
 pub fn evaluate() {
-	let sample = Sample::new(vec![true; 5]);
+	let sample = Sample::new(true, vec![true; 5]);
 
 	let clause_all_atomic = Clause::new(
 		(0..3)
-			.map(|x| Literal::new(x as AtomID, true))
-			.collect::<Vec<Literal>>(),
+			.map(|x| Some(Literal::new(x as AtomID, true)))
+			.collect::<Vec<Option<Literal>>>(),
 	);
 	let clause_all_negated = Clause::new(
 		(0..3)
-			.map(|x| Literal::new(x as AtomID, false))
-			.collect::<Vec<Literal>>(),
+			.map(|x| Some(Literal::new(x as AtomID, false)))
+			.collect::<Vec<Option<Literal>>>(),
 	);
 
 	let dnf = DNF::new(vec![clause_all_atomic, clause_all_negated]);
