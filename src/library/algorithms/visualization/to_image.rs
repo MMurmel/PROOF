@@ -40,7 +40,7 @@ impl ToImage for Clause {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
 
-		for literal in self.literals().iter().filter_map(|&x| x) {
+		for literal in self.literals() {
 			let feature_id = literal.feature_id();
 			if feature_id >= width * height {
 				return Err(ErrorKind::DimensionsTooSmall);
@@ -56,7 +56,8 @@ impl ToImage for Clause {
 
 impl ToImage for DNF {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
-		let clause_count = self.length() as u32;
+		#[allow(clippy::cast_possible_truncation)]
+		let clause_count = self.clauses().len() as u32;
 		if clause_count == 1 {
 			return self.clauses().get(0).unwrap().to_image(width, height);
 		}

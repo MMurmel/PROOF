@@ -22,9 +22,24 @@ impl DNF {
 	#[must_use]
 	pub fn new(clauses: Vec<Clause>) -> Self { Self { clauses } }
 
-	/// Returns the length of the `DNF`.
+	/// Returns the length of the `DNF`, i.e. the sum of all its clauses' lengths.
 	#[must_use]
-	pub fn length(&self) -> usize { self.clauses.len() }
+	pub fn length(&self) -> u32 {
+		self.clauses
+			.iter()
+			.map(|clause| u32::try_from(clause.length()).unwrap_or(u32::MAX))
+			.sum()
+	}
+
+	/// Returns the depth of the `DNF`, i.e. the maximum of all its clauses' lengths.
+	#[must_use]
+	pub fn depth(&self) -> u32 {
+		self.clauses
+			.iter()
+			.map(|clause| u32::try_from(clause.length()).unwrap_or(u32::MAX))
+			.max()
+			.unwrap_or_default()
+	}
 
 	/// Returns the clauses of the `DNF`.
 	#[must_use]

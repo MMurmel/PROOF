@@ -1,4 +1,8 @@
 //! Provides representation and tools for boolean literals.
+use std::hash::{
+	Hash,
+	Hasher,
+};
 use serde::{
 	Serialize,
 	Deserialize,
@@ -13,13 +17,13 @@ use crate::boolean_formulae::evaluation::{Evaluate,};
 
 /// A representation for logical literals,
 /// i.e. an atomic variable (here called 'feature') or its negation.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, Serialize, Deserialize)]
 pub struct Literal {
 	/// The variable from which the literal is created.
 	feature_id: FeatureID,
 	/// The literals parity, i.e.
-	/// `true` if it is an atom and
-	/// `false` if it is the negation of an atom.
+	/// `true` if it is an atomic variable and
+	/// `false` if it is the negation of an atomic variable.
 	parity:     bool,
 }
 
@@ -63,4 +67,14 @@ impl Evaluate for Literal {
 			Some(feature_assignment) => Ok(!self.parity ^ feature_assignment),
 		}
 	}
+}
+
+impl PartialEq for Literal {
+	fn eq(&self, other: &Self) -> bool { self.feature_id == other.feature_id }
+}
+
+/// No `Clause` should ever contain two `Literal`s with the same `FeatureID` and a
+/// different `parity`.
+impl Hash for Literal {
+	fn hash<H: Hasher>(&self, state: &mut H) { self.feature_id.hash(state); }
 }

@@ -66,7 +66,20 @@ fn main() {
 	let pos_dnf = DNF::new(positives.iter().map(Clause::from).collect());
 	let neg_dnf = DNF::new(negatives.iter().map(Clause::from).collect());
 
-	println!("({},{})", pos_dnf.length(), neg_dnf.length());
+	println!(
+		"Positive DNF: {} clauses, depth: {}, length: {}, avg. length/clause: {}.",
+		pos_dnf.clauses().len(),
+		pos_dnf.length(),
+		pos_dnf.depth(),
+		(pos_dnf.length() as f64) / (pos_dnf.clauses().len() as f64)
+	);
+	println!(
+		"Negative DNF: {} clauses, depth: {}, length: {}, avg. length/clause: {}.",
+		neg_dnf.clauses().len(),
+		neg_dnf.length(),
+		neg_dnf.depth(),
+		(neg_dnf.length() as f64) / (neg_dnf.clauses().len() as f64)
+	);
 
 	pos_dnf
 		.to_image(WIDTH, HEIGHT)

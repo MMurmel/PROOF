@@ -13,9 +13,6 @@ use crate::boolean_formulae::data::FeatureID;
 pub enum ErrorKind {
 	/// There is no data for one or more of the evaluated literals.
 	InsufficientData(FeatureID),
-	/// Access to the literal with `FeatureID` failed, because the clause contains too few
-	/// literals.
-	FeatureIdNotPresent(FeatureID),
 }
 
 impl Debug for ErrorKind {
@@ -23,13 +20,6 @@ impl Debug for ErrorKind {
 		match self {
 			Self::InsufficientData(id) => {
 				write!(f, "Insufficient data at FeatureID {}", id)
-			},
-			Self::FeatureIdNotPresent(id) => {
-				write!(
-					f,
-					"Insufficient literals for accessing clause at FeatureID {}",
-					id
-				)
 			},
 		}
 	}
@@ -43,14 +33,6 @@ impl Display for ErrorKind {
 					f,
 					"The data you provided could not be evaluated, because it lacked an entry for the {} \
 					 st/nd/th variable.",
-					id
-				)
-			},
-			Self::FeatureIdNotPresent(id) => {
-				write!(
-					f,
-					"You tried to access the {}th literal of a clause that does not contain that many \
-					 literals.",
 					id
 				)
 			},
