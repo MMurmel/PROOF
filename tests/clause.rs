@@ -1,6 +1,6 @@
 use proof::boolean_formulae::clause::Clause;
 use proof::boolean_formulae::data::{
-	AtomID,
+	FeatureID,
 	Sample,
 };
 use proof::boolean_formulae::ErrorKind;
@@ -11,12 +11,12 @@ use proof::boolean_formulae::literal::Literal;
 fn clause_length() {
 	let clause_all_atomic = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, true)))
+			.map(|x| Some(Literal::new(x as FeatureID, true)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 	let clause_all_negated = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, false)))
+			.map(|x| Some(Literal::new(x as FeatureID, false)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 	assert_eq!(3, clause_all_atomic.length());
@@ -30,12 +30,12 @@ fn clause_evaluation() {
 
 	let clause_all_atomic = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, true)))
+			.map(|x| Some(Literal::new(x as FeatureID, true)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 	let clause_all_negated = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, false)))
+			.map(|x| Some(Literal::new(x as FeatureID, false)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 
@@ -49,7 +49,7 @@ fn clause_evaluation() {
 fn insufficient_data() {
 	let clause = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, true)))
+			.map(|x| Some(Literal::new(x as FeatureID, true)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 

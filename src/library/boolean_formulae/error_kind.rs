@@ -5,27 +5,31 @@ use core::fmt::{
 	Formatter,
 };
 use std::error::Error;
-use crate::boolean_formulae::data::AtomID;
+use crate::boolean_formulae::data::FeatureID;
 
 /// Error Enum for everything that could go wrong during evaluation of a boolean formula
 /// under a given variable assignment
 #[derive(PartialEq, Eq)]
 pub enum ErrorKind {
 	/// There is no data for one or more of the evaluated literals.
-	InsufficientData(AtomID),
-	/// Access to the literal with `AtomID` failed, because the clause contains too few
+	InsufficientData(FeatureID),
+	/// Access to the literal with `FeatureID` failed, because the clause contains too few
 	/// literals.
-	AtomIdOutOfScope(AtomID),
+	FeatureIdNotPresent(FeatureID),
 }
 
 impl Debug for ErrorKind {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Self::InsufficientData(id) => {
-				write!(f, "Insufficient data at AtomID {}", id)
+				write!(f, "Insufficient data at FeatureID {}", id)
 			},
-			Self::AtomIdOutOfScope(id) => {
-				write!(f, "Insufficient literals for accessing clause at AtomID {}", id)
+			Self::FeatureIdNotPresent(id) => {
+				write!(
+					f,
+					"Insufficient literals for accessing clause at FeatureID {}",
+					id
+				)
 			},
 		}
 	}
@@ -42,7 +46,7 @@ impl Display for ErrorKind {
 					id
 				)
 			},
-			Self::AtomIdOutOfScope(id) => {
+			Self::FeatureIdNotPresent(id) => {
 				write!(
 					f,
 					"You tried to access the {}th literal of a clause that does not contain that many \

@@ -7,7 +7,7 @@ use serde::{
 	Deserialize,
 };
 use crate::boolean_formulae::data::{
-	AtomID,
+	FeatureID,
 	Sample,
 };
 use crate::boolean_formulae::ErrorKind;
@@ -34,22 +34,26 @@ impl Clause {
 	#[must_use]
 	pub fn literals(&self) -> &[Option<Literal>] { self.literals.as_slice() }
 
-	/// Removes the literal with the given `AtomID` from the `Clause`.
+	/// Removes the literal with the given `FeatureID` from the `Clause`.
 	///
-	/// If the literal with `AtomID` was present before, it is returned.
+	/// If the literal with `FeatureID` was present before, it is returned.
 	/// If the literal was not present in the first place, `Ok(None)` is returned.
 	///
 	/// # Errors
-	/// If the `AtomID` is larger than the length of the clause,
-	/// `Err(ErrorKind::AtomIdOutOfScope(atom_id))` is returned.
-	pub fn remove_literal(&mut self, atom_id: AtomID) -> Result<Option<Literal>, ErrorKind> {
-		trace!("Trying to remove literal with AtomID {} from a clause.", atom_id);
-		match self.literals.get_mut(atom_id as usize) {
+	/// If the `FeatureID` is larger than the length of the clause,
+	/// `Err(ErrorKind::FeatureIDOutOfScope(feature_id))` is returned.
+	pub fn remove_literal(&mut self, feature_id: FeatureID) -> Result<Option<Literal>, ErrorKind> {
+		trace!(
+			"Trying to remove literal with FeatureID {} from a clause.",
+			feature_id
+		);
+		match self.literals.get_mut(feature_id as usize) {
 			Some(lit) => match lit {
 				Some(value) => {
 					trace!(
-						"Clause contained a literal with AtomID {} and polarity <{}>, removed successfully.",
-						atom_id,
+						"Clause contained a literal with FeatureID {} and polarity <{}>, removed \
+						 successfully.",
+						feature_id,
 						value.parity()
 					);
 					let helper = *value;
@@ -58,23 +62,23 @@ impl Clause {
 				},
 				None => {
 					trace!(
-						"Clause did not contain a literal with AtomID {}, but was in viable range.",
-						atom_id
+						"Clause did not contain a literal with FeatureID {}, but was in viable range.",
+						feature_id
 					);
 					Ok(None)
 				},
 			},
 			None => {
 				trace!(
-					"AtomID {} was out of range for clause, returning an Error.",
-					atom_id
+					"FeatureID {} was out of range for clause, returning an Error.",
+					feature_id
 				);
-				Err(ErrorKind::AtomIdOutOfScope(atom_id))
+				Err(ErrorKind::FeatureIdNotPresent(feature_id))
 			},
 		}
 	}
 
-	/// Whether the clause is empty, i.e. contains only `None` for every `AtomID`
+	/// Whether the clause is empty, i.e. contains only `None` for every `FeatureID`
 	#[must_use]
 	pub fn is_empty(&self) -> bool { self.literals.iter().all(Option::is_none) }
 }
@@ -97,7 +101,7 @@ impl From<&Sample> for Clause {
 		let mut literals = Vec::new();
 		for (feature_id, feature_value) in sample.features().iter().enumerate() {
 			#[allow(clippy::cast_possible_truncation)]
-			literals.push(Some(Literal::new(feature_id as AtomID, *feature_value)));
+			literals.push(Some(Literal::new(feature_id as FeatureID, *feature_value)));
 		}
 
 		Self { literals }

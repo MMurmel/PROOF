@@ -41,12 +41,12 @@ impl ToImage for Clause {
 		let mut image = RgbImage::new(width, height);
 
 		for literal in self.literals().iter().filter_map(|&x| x) {
-			let atom_id = literal.atom_id();
-			if atom_id >= width * height {
+			let feature_id = literal.feature_id();
+			if feature_id >= width * height {
 				return Err(ErrorKind::DimensionsTooSmall);
 			}
-			let column = atom_id % width;
-			let row = atom_id / width;
+			let column = feature_id % width;
+			let row = feature_id / width;
 			let color: (u8, u8, u8) = if literal.parity() { GREEN } else { RED };
 			image.put_pixel(column, row, Rgb::from([color.0, color.1, color.2]));
 		}
@@ -90,7 +90,7 @@ impl ToImage for DNF {
 			})
 			.collect::<HashMap<(u32, u32), (u8, u8, u8)>>();
 
-		for ((x, y), (r, g, b)) in helper_map.into_iter() {
+		for ((x, y), (r, g, b)) in helper_map {
 			image.put_pixel(x, y, Rgb::from([r, g, b]));
 		}
 

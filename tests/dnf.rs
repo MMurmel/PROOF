@@ -1,6 +1,6 @@
 use proof::boolean_formulae::clause::Clause;
 use proof::boolean_formulae::data::{
-	AtomID,
+	FeatureID,
 	Sample,
 };
 use proof::boolean_formulae::dnf::DNF;
@@ -13,12 +13,12 @@ pub fn evaluate() {
 
 	let clause_all_atomic = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, true)))
+			.map(|x| Some(Literal::new(x as FeatureID, true)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 	let clause_all_negated = Clause::new(
 		(0..3)
-			.map(|x| Some(Literal::new(x as AtomID, false)))
+			.map(|x| Some(Literal::new(x as FeatureID, false)))
 			.collect::<Vec<Option<Literal>>>(),
 	);
 

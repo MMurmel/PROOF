@@ -4,8 +4,8 @@ use serde::{
 	Serialize,
 	Deserialize,
 };
-/// Each atom is identified by a single number.
-pub type AtomID = u32;
+/// Each feature of the data is identified by a single number.
+pub type FeatureID = u32;
 
 /// The general struct to represent a manifestation of the feature space.
 #[derive(Debug, Serialize, Deserialize)]
@@ -32,5 +32,5 @@ impl Sample {
 	/// Gets the data at the specified index, i.e. the assignment of the specified
 	/// variable.
 	#[must_use]
-	pub fn at_feature(&self, index: AtomID) -> Option<&bool> { self.features.get(index as usize) }
+	pub fn at_feature(&self, index: FeatureID) -> Option<&bool> { self.features.get(index as usize) }
 }

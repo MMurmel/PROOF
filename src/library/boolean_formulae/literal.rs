@@ -5,32 +5,32 @@ use serde::{
 };
 
 use crate::boolean_formulae::data::{
-	AtomID,
+	FeatureID,
 	Sample,
 };
 use crate::boolean_formulae::ErrorKind;
 use crate::boolean_formulae::evaluation::{Evaluate,};
 
 /// A representation for logical literals,
-/// i.e. an atom or its negation.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+/// i.e. an atomic variable (here called 'feature') or its negation.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Literal {
 	/// The variable from which the literal is created.
-	atom_id: AtomID,
+	feature_id: FeatureID,
 	/// The literals parity, i.e.
 	/// `true` if it is an atom and
 	/// `false` if it is the negation of an atom.
-	parity:  bool,
+	parity:     bool,
 }
 
 impl Literal {
-	/// Returns a new `Literal` of the provided atom with the given parity.
+	/// Returns a new `Literal` of the provided feature with the given parity.
 	#[must_use]
-	pub const fn new(atom_id: AtomID, parity: bool) -> Self { Self { atom_id, parity } }
+	pub const fn new(feature_id: FeatureID, parity: bool) -> Self { Self { feature_id, parity } }
 
-	/// Returns the `Literal` atom id.
+	/// Returns the `Literal`s feature id.
 	#[must_use]
-	pub const fn atom_id(&self) -> AtomID { self.atom_id }
+	pub const fn feature_id(&self) -> FeatureID { self.feature_id }
 
 	/// Returns the `Literal`s parity.
 	#[must_use]
@@ -40,8 +40,8 @@ impl Literal {
 	#[must_use]
 	pub const fn to_negated(&self) -> Self {
 		Self {
-			atom_id: self.atom_id,
-			parity:  !self.parity,
+			feature_id: self.feature_id,
+			parity:     !self.parity,
 		}
 	}
 
@@ -50,16 +50,17 @@ impl Literal {
 }
 
 impl Evaluate for Literal {
-	/// Evaluates the literal on a variable assignment.
+	/// Evaluates the literal on a variable assignment (i.e. on data).
 	fn evaluate(&self, data: &Sample) -> Result<bool, ErrorKind> {
-		match data.at_feature(self.atom_id) {
-			None => Err(ErrorKind::InsufficientData(self.atom_id)),
+		match data.at_feature(self.feature_id) {
+			None => Err(ErrorKind::InsufficientData(self.feature_id)),
 			// XOR is a toggled inverter
-			// self.parity	| 0 0 1 1
-			// !self.parity	| 1 1 0 0
-			// assignment	| 0 1 0 1
-			// outcome		| 1 0 0 1
-			Some(assignment) => Ok(!self.parity ^ assignment),
+			// self.parity			| 0 0 1 1
+			// !self.parity			| 1 1 0 0
+			// feature assignment	| 0 1 0 1
+			// ==============================
+			// outcome				| 1 0 0 1
+			Some(feature_assignment) => Ok(!self.parity ^ feature_assignment),
 		}
 	}
 }
