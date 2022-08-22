@@ -58,9 +58,6 @@ impl ToImage for DNF {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		#[allow(clippy::cast_possible_truncation)]
 		let clause_count = self.clauses().len() as u32;
-		if clause_count == 1 {
-			return self.clauses().get(0).unwrap().to_image(width, height);
-		}
 		let mut helper_map: HashMap<(u32, u32), (u32, u32, u32)> = HashMap::new();
 
 		let mut image = RgbImage::new(width, height);
@@ -73,7 +70,7 @@ impl ToImage for DNF {
 						*g_map += u32::from(*g);
 						*b_map += u32::from(*b);
 					})
-					.or_insert((0, 0, 0));
+					.or_insert((u32::from(*r), u32::from(*g), u32::from(*b)));
 			}
 		}
 
