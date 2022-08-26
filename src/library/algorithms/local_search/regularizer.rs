@@ -7,7 +7,7 @@ use serde::{
 	Deserialize,
 };
 /// Distinguishes different ways to regularize a DNF.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Regularizer {
 	/// Only penalize depth of the DNF.
 	Depth,

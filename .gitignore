@@ -24,6 +24,7 @@ documentation/site
 # -----------------------------------------------
 
 target/
+proof
 
 **/Cargo.lock
 **/*.rs.bk

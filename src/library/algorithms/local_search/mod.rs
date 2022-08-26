@@ -3,4 +3,4 @@
 mod regularizer;
 mod neighbour_generator;
 mod state;
-mod run_config;
+pub mod run_config;

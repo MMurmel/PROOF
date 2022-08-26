@@ -8,7 +8,7 @@ use serde::{
 };
 
 /// Distinguishes different methods for generating Neighbourhoods of a `DNF`.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NeighbourhoodGenerator {
 	/// Remove one literal.
 	RemoveOneLiteral,

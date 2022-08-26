@@ -1,2 +1,2 @@
 pub mod visualization;
-mod local_search;
+pub mod local_search;
