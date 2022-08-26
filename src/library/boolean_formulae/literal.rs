@@ -1,8 +1,5 @@
 //! Provides representation and tools for boolean literals.
-use std::hash::{
-	Hash,
-	Hasher,
-};
+use std::hash::{Hash,};
 use serde::{
 	Serialize,
 	Deserialize,
