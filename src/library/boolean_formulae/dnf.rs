@@ -48,6 +48,15 @@ impl DNF {
 	/// Returns a mutable reference to the clauses of the `DNF`.
 	#[must_use]
 	pub fn mut_clauses(&mut self) -> &mut [Clause] { self.clauses.as_mut_slice() }
+
+	/// Removes the clause from the DNF and returns whether it was present.
+	pub fn remove_clause(&mut self, clause: &Clause) -> bool {
+		if let Some(position) = self.clauses.iter().position(|other| *other == *clause) {
+			self.clauses.remove(position);
+			return true;
+		}
+		false
+	}
 }
 
 impl Evaluate for DNF {
