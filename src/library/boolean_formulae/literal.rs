@@ -17,7 +17,7 @@ use crate::boolean_formulae::evaluation::{Evaluate,};
 
 /// A representation for logical literals,
 /// i.e. an atomic variable (here called 'feature') or its negation.
-#[derive(Debug, Clone, Copy, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Literal {
 	/// The variable from which the literal is created.
 	feature_id: FeatureID,
@@ -67,14 +67,4 @@ impl Evaluate for Literal {
 			Some(feature_assignment) => Ok(!self.parity ^ feature_assignment),
 		}
 	}
-}
-
-impl PartialEq for Literal {
-	fn eq(&self, other: &Self) -> bool { self.feature_id == other.feature_id }
-}
-
-/// No `Clause` should ever contain two `Literal`s with the same `FeatureID` and a
-/// different `parity`.
-impl Hash for Literal {
-	fn hash<H: Hasher>(&self, state: &mut H) { self.feature_id.hash(state); }
 }

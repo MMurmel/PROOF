@@ -2,6 +2,10 @@
 //! i.e. conjunctions of boolean literals.
 
 use std::collections::HashSet;
+use log::{
+	trace,
+	warn,
+};
 use serde::{
 	Serialize,
 	Deserialize,
@@ -26,6 +30,10 @@ impl Clause {
 	#[must_use]
 	pub const fn new(literals: HashSet<Literal>) -> Self { Self { literals } }
 
+	/// Whether the clause is empty, i.e. contains only `None` for every `FeatureID`
+	#[must_use]
+	pub fn is_empty(&self) -> bool { self.literals.is_empty() }
+
 	/// Returns the length of the `Clause`, i.e. the number of literals it contains.
 	#[must_use]
 	pub fn length(&self) -> usize { self.literals.len() }
@@ -34,21 +42,36 @@ impl Clause {
 	#[must_use]
 	pub const fn literals(&self) -> &HashSet<Literal> { &self.literals }
 
+	/// Adds a literal to the clause, potentially replacing a previously contained literal
+	/// with the same `FeatureID` and different polarity.
+	/// Returns the replaced value.
+	pub fn insert_literal(&mut self, lit: Literal) -> Option<Literal> {
+		trace!("Trying to insert {:?} into clause.", lit);
+		let negated_lit = lit.to_negated();
+		let removed = self.literals.remove(&negated_lit);
+		let inserted = self.literals.insert(lit);
+		if removed && inserted {
+			warn!(
+				"Somehow both the literal with id {} and its negation were present in the clause!",
+				lit.feature_id()
+			)
+		}
+		trace!(
+			"Literal was already present: {}, Negated literal was removed: {}",
+			inserted,
+			removed
+		);
+		return if removed { Some(negated_lit) } else { None };
+	}
+
 	/// Removes the literal with the given `FeatureID` from the `Clause`
 	/// and returns whether it was present.
 	pub fn remove_literal(&mut self, feature_id: FeatureID) -> bool {
 		// Since literals are only hashed by their feature_id, the parity does not matter here.
 		let lit = Literal::new(feature_id, true);
-		self.literals.remove(&lit)
+		let negated_lit = lit.to_negated();
+		self.literals.remove(&lit) || self.literals.remove(&negated_lit)
 	}
-
-	/// Adds a literal to the clause, potentially replacing a previously contained literal
-	/// with the same `FeatureID`. Returns the replaced value.
-	pub fn insert_literal(&mut self, literal: Literal) -> Option<Literal> { self.literals.replace(literal) }
-
-	/// Whether the clause is empty, i.e. contains only `None` for every `FeatureID`
-	#[must_use]
-	pub fn is_empty(&self) -> bool { self.literals.is_empty() }
 }
 
 impl Evaluate for Clause {
