@@ -2,7 +2,12 @@
 
 use crate::boolean_formulae::dnf::DNF;
 
+use serde::{
+	Serialize,
+	Deserialize,
+};
 /// Distinguishes different ways to regularize a DNF.
+#[derive(Serialize, Deserialize)]
 pub enum Regularizer {
 	/// Only penalize depth of the DNF.
 	Depth,

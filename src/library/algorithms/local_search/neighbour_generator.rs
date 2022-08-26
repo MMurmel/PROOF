@@ -2,7 +2,13 @@
 
 use crate::boolean_formulae::dnf::DNF;
 
+use serde::{
+	Serialize,
+	Deserialize,
+};
+
 /// Distinguishes different methods for generating Neighbourhoods of a `DNF`.
+#[derive(Serialize, Deserialize)]
 pub enum NeighbourhoodGenerator {
 	/// Remove one literal.
 	RemoveOneLiteral,
