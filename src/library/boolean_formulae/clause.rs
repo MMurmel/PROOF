@@ -54,14 +54,18 @@ impl Clause {
 			warn!(
 				"Somehow both the literal with id {} and its negation were present in the clause!",
 				lit.feature_id()
-			)
+			);
 		}
 		trace!(
 			"Literal was already present: {}, Negated literal was removed: {}",
 			inserted,
 			removed
 		);
-		return if removed { Some(negated_lit) } else { None };
+		if removed {
+			Some(negated_lit)
+		} else {
+			None
+		}
 	}
 
 	/// Removes the literal with the given `FeatureID` from the `Clause`

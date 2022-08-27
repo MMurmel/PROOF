@@ -7,7 +7,9 @@ use serde::{
 	Deserialize,
 };
 /// Distinguishes different ways to regularize a DNF.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+// Due to a bug in serde, a false positive of this lint occurs here.
+#[allow(clippy::use_self)]
 pub enum Regularizer {
 	/// Only penalize depth of the DNF.
 	Depth,

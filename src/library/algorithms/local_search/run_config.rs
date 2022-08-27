@@ -1,5 +1,5 @@
 //! Provides configuration parameters for a run of the search algorithm.
-use crate::algorithms::local_search::neighbour_generator::NeighbourhoodGenerator;
+use crate::algorithms::local_search::neighbourhood_generator::NeighbourhoodGenerator;
 use crate::algorithms::local_search::regularizer::Regularizer;
 use serde::{
 	Serialize,
