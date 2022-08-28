@@ -27,68 +27,49 @@
 //! My implementation for a research project on locals search
 //! for learning partial boolean functions.
 
+use std::fs::File;
 use std::io::{
 	BufRead,
+	BufReader,
 	stdin,
+	Write,
 };
-use log::{info,};
+
+use log::{
+	debug,
+	info,
+};
+use proof::algorithms::local_search::run_config::{RunConfig,};
 use proof::arguments::Arguments;
-use proof::boolean_formulae::data::{Sample,};
-
-use proof::boolean_formulae::clause::Clause;
-use proof::boolean_formulae::dnf::DNF;
-
-use proof::algorithms::visualization::to_image::{ToImage,};
 
 /// ### `main`
 ///
 /// A simple, plain old `main` function. Nothing mysterious here.
 fn main() {
-	/// Width of images
-	const WIDTH: u32 = 28;
-	/// Height of images
-	const HEIGHT: u32 = 28;
-
+	info!("Welcome to PROOF.");
 	let arguments = Arguments::cli_args();
 
 	env_logger::Builder::new()
 		.filter_level(arguments.log_level())
 		.init();
 
-	info!("Welcome to PROOF");
-
-	let (positives, negatives): (Vec<_>, Vec<_>) = stdin()
-		.lock()
-		.lines()
-		.map(|line| serde_json::from_str(&line.unwrap()).unwrap())
-		.partition(Sample::label);
-
-	let pos_dnf = DNF::new(positives.iter().map(Clause::from).collect());
-	let neg_dnf = DNF::new(negatives.iter().map(Clause::from).collect());
-
-	println!(
-		"Positive DNF: {} clauses, depth: {}, length: {}, avg. length/clause: {}.",
-		pos_dnf.clauses().len(),
-		pos_dnf.length(),
-		pos_dnf.depth(),
-		(pos_dnf.length() as f64) / (pos_dnf.clauses().len() as f64)
-	);
-	println!(
-		"Negative DNF: {} clauses, depth: {}, length: {}, avg. length/clause: {}.",
-		neg_dnf.clauses().len(),
-		neg_dnf.length(),
-		neg_dnf.depth(),
-		(neg_dnf.length() as f64) / (neg_dnf.clauses().len() as f64)
+	let config: RunConfig = arguments.config.as_deref().map_or_else(
+		|| {
+			debug!("Starting PROOF with default config file.");
+			RunConfig::default()
+		},
+		|config_path| {
+			debug!("Starting PROOF with custom config file.");
+			let config_file = File::open(config_path).unwrap();
+			let mut config_string = String::new();
+			for line in BufReader::new(config_file).lines().flatten() {
+				config_string.push_str(&line);
+			}
+			let config = serde_json::from_str(&config_string).unwrap();
+			debug!("Parsed custom config file. Result was {:?}.", config);
+			config
+		},
 	);
 
-	pos_dnf
-		.to_image(WIDTH, HEIGHT)
-		.unwrap()
-		.save("positives.png")
-		.unwrap();
-	neg_dnf
-		.to_image(WIDTH, HEIGHT)
-		.unwrap()
-		.save("negatives.png")
-		.unwrap();
+	println!("{}", serde_json::to_string(&config).unwrap());
 }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use std::path::PathBuf;
 // see https://github.com/clap-rs/clap/blob/v3.1.2/examples/derive_ref/README.md
 // for the clap derive reference
 use clap::Parser;
@@ -11,6 +12,10 @@ use clap::Parser;
 pub struct Arguments {
 	#[clap(flatten)]
 	verbosity: clap_verbosity_flag::Verbosity,
+
+	/// Sets a custom config file
+	#[clap(short, long, value_parser, value_name = "FILE")]
+	pub config: Option<PathBuf>,
 }
 
 impl Arguments {
