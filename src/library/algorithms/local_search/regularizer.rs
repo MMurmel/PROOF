@@ -1,13 +1,13 @@
 //! Provides different regularizers for `DNF`s.
 
-use crate::boolean_formulae::dnf::DNF;
-
 use serde::{
 	Serialize,
 	Deserialize,
 };
+use crate::algorithms::local_search::state::State;
+
 /// Distinguishes different ways to regularize a DNF.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
 // Due to a bug in serde, a false positive of this lint occurs here.
 #[allow(clippy::use_self)]
 pub enum Regularizer {
@@ -21,11 +21,16 @@ pub enum Regularizer {
 
 impl Regularizer {
 	/// Return the regularization value for the DNF according to the `Strategy`.
-	pub fn regularize(&self, dnf: &DNF) -> u32 {
+	pub fn regularize(&self, state: &State) -> u32 {
 		match self {
-			Self::Depth => dnf.depth(),
-			Self::Length => dnf.length(),
-			Self::DepthAndLength => dnf.depth() + dnf.length(),
+			Self::Depth => state.positive_dnf.depth() + state.negative_dnf.depth(),
+			Self::Length => state.positive_dnf.length() + state.negative_dnf.length(),
+			Self::DepthAndLength => {
+				state.positive_dnf.length()
+					+ state.positive_dnf.depth()
+					+ state.negative_dnf.length()
+					+ state.negative_dnf.depth()
+			},
 		}
 	}
 }

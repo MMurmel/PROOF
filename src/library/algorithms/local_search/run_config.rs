@@ -10,15 +10,15 @@ use serde::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RunConfig {
 	/// How often this configuration should be run.
-	run_count:                u32,
+	pub run_count:                u32,
 	/// The path to the data sample file.
-	data_path:                String,
+	pub data_path:                String,
 	/// The metrics for this run.
-	metrics:                  Option<Metrics>,
+	pub metrics:                  Option<Metrics>,
 	/// Strategies for neighbourhood generation.
-	neighbourhood_generators: Vec<NeighbourhoodGenerator>,
+	pub neighbourhood_generators: Vec<NeighbourhoodGenerator>,
 	/// Regularizer strategy.
-	regularizer:              Regularizer,
+	pub regularizer:              Regularizer,
 }
 
 impl Default for RunConfig {
@@ -27,8 +27,8 @@ impl Default for RunConfig {
 			run_count:                1,
 			data_path:                "data/prepared_data.json".to_string(),
 			metrics:                  Some(Metrics {
-				picture_frequency:     Some(10),
-				regularizer_frequency: Some(10),
+				picture_frequency:     10,
+				regularizer_frequency: 10,
 			}),
 			neighbourhood_generators: vec![NeighbourhoodGenerator::RemoveOneLiteral],
 			regularizer:              Regularizer::DepthAndLength,
@@ -36,14 +36,11 @@ impl Default for RunConfig {
 	}
 }
 
-/// How often, if at all, metrics should be printed.
-type Frequency = Option<u32>;
-
 /// Holds information about which metrics should be run and where they should be stored.
 #[derive(Debug, Serialize, Deserialize)]
-struct Metrics {
+pub struct Metrics {
 	/// How often the resulting DNFs should be converted to pictures.
-	picture_frequency:     Frequency,
+	pub picture_frequency:     u32,
 	/// How often the regularizer value of the DNFs should be stored.
-	regularizer_frequency: Frequency,
+	pub regularizer_frequency: u32,
 }

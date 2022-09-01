@@ -31,14 +31,13 @@ use std::fs::File;
 use std::io::{
 	BufRead,
 	BufReader,
-	stdin,
-	Write,
 };
 
 use log::{
 	debug,
 	info,
 };
+use proof::algorithms::local_search::basic_hill_climber;
 use proof::algorithms::local_search::run_config::{RunConfig,};
 use proof::arguments::Arguments;
 
@@ -71,5 +70,5 @@ fn main() {
 		},
 	);
 
-	println!("{}", serde_json::to_string(&config).unwrap());
+	basic_hill_climber(&config);
 }

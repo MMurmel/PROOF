@@ -1,11 +1,12 @@
 //! Provides neighbourhood generation methods for run state.
 
-use crate::boolean_formulae::dnf::DNF;
+use log::debug;
 
 use serde::{
 	Serialize,
 	Deserialize,
 };
+use crate::algorithms::local_search::state::State;
 
 /// Distinguishes different methods for generating Neighbourhoods of a `DNF`.
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,17 +19,33 @@ pub enum NeighbourhoodGenerator {
 
 impl NeighbourhoodGenerator {
 	/// Generates the neighbourhood of the `DNF` according to the generator strategy.
-	pub fn generate_neighbourhood(&self, dnf: &DNF) -> Vec<DNF> {
+	pub fn generate_neighbourhood(&self, state: &State) -> Vec<State> {
+		debug!("Started generating neighbourhood.");
 		let mut result = Vec::new();
 		match self {
 			Self::RemoveOneLiteral => {
-				// let a = dnf.clauses().into_iter().enumerate();
-				for (id, clause) in dnf.clauses().iter().enumerate() {
+				// Neighbours of the state by removing one literal from the positive dnf.
+				for (id, clause) in state.positive_dnf.clauses().iter().enumerate() {
 					for literal in clause.literals() {
-						let mut cloned_dnf = dnf.clone();
+						let mut cloned_dnf = state.positive_dnf.clone();
 						let selected_clause = cloned_dnf.mut_clauses().get_mut(id).unwrap();
 						selected_clause.remove_literal(literal.feature_id());
-						result.push(cloned_dnf);
+						result.push(State {
+							positive_dnf: cloned_dnf,
+							negative_dnf: state.negative_dnf.clone(),
+						});
+					}
+				}
+				// Neighbours of the state by removing one literal from the negative dnf.
+				for (id, clause) in state.negative_dnf.clauses().iter().enumerate() {
+					for literal in clause.literals() {
+						let mut cloned_dnf = state.negative_dnf.clone();
+						let selected_clause = cloned_dnf.mut_clauses().get_mut(id).unwrap();
+						selected_clause.remove_literal(literal.feature_id());
+						result.push(State {
+							positive_dnf: state.positive_dnf.clone(),
+							negative_dnf: cloned_dnf,
+						});
 					}
 				}
 			},
@@ -42,6 +59,7 @@ impl NeighbourhoodGenerator {
 				//}
 			},
 		}
+		debug!("Found {} neighbours.", result.len());
 		result
 	}
 }
