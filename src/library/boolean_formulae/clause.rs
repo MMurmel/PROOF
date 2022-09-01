@@ -6,6 +6,10 @@ use log::{
 	trace,
 	warn,
 };
+use rayon::iter::{
+	IntoParallelRefIterator,
+	ParallelIterator,
+};
 use serde::{
 	Serialize,
 	Deserialize,
@@ -81,7 +85,8 @@ impl Clause {
 impl Evaluate for Clause {
 	fn evaluate(&self, data: &Sample) -> Result<bool, ErrorKind> {
 		// Try to evaluate every literal in the clause under the data.
-		let values: Result<Vec<bool>, ErrorKind> = self.literals.iter().map(|x| x.evaluate(data)).collect();
+		let values: Result<Vec<bool>, ErrorKind> =
+			self.literals.par_iter().map(|x| x.evaluate(data)).collect();
 		// If any literal evaluation resulted in an error, return that error;
 		// otherwise return the conjunction of the evaluations.
 		Ok(values?.iter().all(|&x| x))

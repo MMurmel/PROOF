@@ -5,6 +5,10 @@ use serde::{
 	Deserialize,
 };
 
+use rayon::iter::{
+	IntoParallelRefIterator,
+	ParallelIterator,
+};
 use crate::boolean_formulae::clause::Clause;
 use crate::boolean_formulae::data::{Sample,};
 use crate::boolean_formulae::ErrorKind;
@@ -63,7 +67,7 @@ impl Evaluate for DNF {
 	fn evaluate(&self, data: &Sample) -> Result<bool, ErrorKind> {
 		let values: Result<Vec<bool>, ErrorKind> = self
 			.clauses
-			.iter()
+			.par_iter()
 			.map(|literal| literal.evaluate(data))
 			.collect();
 		Ok(values?.iter().any(|&x| x))
