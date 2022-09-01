@@ -1,6 +1,6 @@
 {
     "run_count": 1,
-    "data_path": "data/prepared_data.json",
+    "data_path": "data/prepared_data_short.json",
     "metrics": {
         "picture_frequency": 10,
         "regularizer_frequency": 10
