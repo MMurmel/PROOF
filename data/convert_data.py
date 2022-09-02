@@ -45,9 +45,16 @@ def prepare_data(image_file, label_file, out_file, sample_count):
 
         for s in output:
             output_file.write(to_json(s) + "\n")
+        # TODO
+        #output_file.write(to_json(output))
 
 
 prepare_data("original/t10k-images-idx3-ubyte.gz",
              "original/t10k-labels-idx1-ubyte.gz",
              "prepared_data.json",
              10000)
+
+with open("prepared_data.json") as whole_file, open("prepared_data_short.json", "w") as short_file:
+    for _ in range(10):
+        line = next(whole_file).strip()
+        short_file.write(line + "\n")

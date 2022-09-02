@@ -8,5 +8,8 @@
     "neighbourhood_generators": [
         "RemoveOneLiteral"
     ],
-    "regularizer": "DepthAndLength"
+    "regularizer": "DepthAndLength",
+    "algorithm": {
+        "BasicHillClimber": 50
+    }
 }

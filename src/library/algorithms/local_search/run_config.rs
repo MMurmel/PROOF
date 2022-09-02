@@ -5,6 +5,7 @@ use serde::{
 	Serialize,
 	Deserialize,
 };
+use crate::algorithms::local_search::run_config::Algorithm::BasicHillClimber;
 
 /// Holds information about all possibly configurable parameters of a run.
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,6 +20,8 @@ pub struct RunConfig {
 	pub neighbourhood_generators: Vec<NeighbourhoodGenerator>,
 	/// Regularizer strategy.
 	pub regularizer:              Regularizer,
+	/// Which Algorithm to use.
+	pub algorithm:                Algorithm,
 }
 
 impl Default for RunConfig {
@@ -32,8 +35,16 @@ impl Default for RunConfig {
 			}),
 			neighbourhood_generators: vec![NeighbourhoodGenerator::RemoveOneLiteral],
 			regularizer:              Regularizer::DepthAndLength,
+			algorithm:                BasicHillClimber(100),
 		}
 	}
+}
+
+/// Differentiates between the different algorithms to be used.
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Algorithm {
+	/// A very basic hill climber holding its maximum iteration count.
+	BasicHillClimber(u32),
 }
 
 /// Holds information about which metrics should be run and where they should be stored.

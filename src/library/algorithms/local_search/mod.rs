@@ -10,11 +10,15 @@ use std::io::{
 	Write,
 };
 use std::path::Path;
-use log::debug;
+use log::{
+	debug,
+	info,
+};
 use rayon::iter::{
 	IntoParallelRefIterator,
 	ParallelIterator,
 };
+use crate::algorithms::local_search::run_config::Algorithm::BasicHillClimber;
 use crate::algorithms::local_search::run_config::RunConfig;
 use crate::algorithms::local_search::state::State;
 use crate::algorithms::visualization::to_image::ToImage;
@@ -33,6 +37,7 @@ pub mod run_config;
 pub fn basic_hill_climber(run_config: &RunConfig) {
 	debug!("Starting hill climber with config {:?}", run_config);
 	let regularizer = run_config.regularizer;
+	let BasicHillClimber(max_iterations) = run_config.algorithm;
 
 	let data_file =
 		File::open(Path::new(&run_config.data_path)).expect("Could not open the data file you provided.");
@@ -40,6 +45,7 @@ pub fn basic_hill_climber(run_config: &RunConfig) {
 	let output_path = Path::new("output");
 	let metrics_path = output_path.join("metrics");
 	create_dir_all(&metrics_path).expect("Could not create output directory.");
+	let mut output_file = File::create(&output_path.join("output")).expect("Could not create output file.");
 	let mut metrics_file =
 		File::create(&metrics_path.join("metrics")).expect("Could not create metrics file.");
 
@@ -60,7 +66,37 @@ pub fn basic_hill_climber(run_config: &RunConfig) {
 
 	let mut iteration: u32 = 0;
 
-	while iteration < 40 {
+	while iteration <= max_iterations {
+		info!("{}", iteration);
+		if let Some(metrics) = &run_config.metrics {
+			if iteration % metrics.regularizer_frequency == 0 {
+				metrics_file
+					.write_all(
+						format!(
+							"Iteration: {}: DNF-regularizer value: {}\n",
+							iteration,
+							regularizer.regularize(&current_state),
+						)
+						.as_bytes(),
+					)
+					.expect("Could not write to the metrics file.");
+			}
+			if iteration % metrics.picture_frequency == 0 {
+				current_state
+					.positive_dnf
+					.to_image(28, 28)
+					.unwrap()
+					.save(metrics_path.join(format!("iteration-{}-positive.png", iteration).as_str()))
+					.unwrap();
+				current_state
+					.negative_dnf
+					.to_image(28, 28)
+					.unwrap()
+					.save(metrics_path.join(format!("iteration-{}-negative.png", iteration).as_str()))
+					.unwrap();
+			}
+		}
+
 		let best_neighbour = run_config
 			.neighbourhood_generators
 			.par_iter()
@@ -80,34 +116,17 @@ pub fn basic_hill_climber(run_config: &RunConfig) {
 			},
 		}
 
-		if let Some(metrics) = &run_config.metrics {
-			if iteration % metrics.regularizer_frequency == 0 {
-				metrics_file
-					.write_all(
-						format!(
-							"Iteration: {}: DNF-regularizer value: {}\n",
-							iteration,
-							regularizer.regularize(&current_state),
-						)
-						.as_bytes(),
-					)
-					.expect("Could not write to the metrics file.");
-			}
-			if iteration % metrics.picture_frequency == 0 {
-				current_state
-					.positive_dnf
-					.to_image(28, 28)
-					.unwrap()
-					.save(metrics_path.join(format!("it-{}-positive.png", iteration).as_str()))
-					.unwrap();
-				current_state
-					.negative_dnf
-					.to_image(28, 28)
-					.unwrap()
-					.save(metrics_path.join(format!("it-{}-negative.png", iteration).as_str()))
-					.unwrap();
-			}
-		}
 		iteration += 1;
 	}
+	output_file
+		.write_all(
+			format!(
+				"Best state after {} iterations:\n Positive DNF: {}\n Negative DNF: {}",
+				iteration,
+				serde_json::to_string(&best_state.positive_dnf).unwrap(),
+				serde_json::to_string(&best_state.negative_dnf).unwrap()
+			)
+			.as_bytes(),
+		)
+		.expect("Could not write final DNFs to output file.");
 }
