@@ -30,3 +30,5 @@ e.g. `{"label":false,"features":[true,true,false]}`.
 In order to (re)create the data used for this project
 you must create an anaconda environment from the `environment.yaml`
 and execute the `convert_data.py` from within the `data` directory.
+This creates a `prepared_data.json` containing all adequate samples from the dataset,
+and a `prepared_data_short.json` containing only the first 10 samples for testing purposes.
