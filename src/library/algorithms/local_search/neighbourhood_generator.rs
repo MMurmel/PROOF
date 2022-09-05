@@ -1,6 +1,8 @@
 //! Provides neighbourhood generation methods for run state.
 
 use log::debug;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 use serde::{
 	Serialize,
@@ -19,7 +21,12 @@ pub enum NeighbourhoodGenerator {
 
 impl NeighbourhoodGenerator {
 	/// Generates the neighbourhood of the `DNF` according to the generator strategy.
-	pub fn generate_neighbourhood(&self, state: &State) -> Vec<State> {
+	pub fn generate_neighbourhood(
+		&self,
+		state: &State,
+		size_limit: Option<u32>,
+		shuffle: bool,
+	) -> Vec<State> {
 		debug!("Started generating neighbourhood.");
 		let mut result = Vec::new();
 		match self {
@@ -60,6 +67,12 @@ impl NeighbourhoodGenerator {
 			},
 		}
 		debug!("Found {} neighbours.", result.len());
+		if shuffle {
+			result.shuffle(&mut thread_rng());
+		}
+		if let Some(limit) = size_limit {
+			result.truncate(limit as usize);
+		}
 		result
 	}
 }

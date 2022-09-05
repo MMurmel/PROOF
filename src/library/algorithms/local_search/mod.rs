@@ -100,7 +100,7 @@ pub fn basic_hill_climber(run_config: &RunConfig) {
 		let best_neighbour = run_config
 			.neighbourhood_generators
 			.par_iter()
-			.flat_map(|generator| generator.generate_neighbourhood(&current_state))
+			.flat_map(|generator| generator.generate_neighbourhood(&current_state, Some(100), true))
 			.filter(|state| state.is_feasible(positive_samples.as_slice(), negative_samples.as_slice()))
 			.min_by(|a, b| regularizer.regularize(a).cmp(&regularizer.regularize(b)));
 
