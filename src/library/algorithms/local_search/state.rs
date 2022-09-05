@@ -10,18 +10,18 @@ use crate::boolean_formulae::evaluation::Evaluate;
 
 /// The current state of the algorithm, i.e. the two DNFs.
 #[derive(Debug, Clone)]
-pub struct State {
+pub struct State<const SIZE: usize> {
 	/// Classifying DNF of the positive samples.
-	pub(crate) positive_dnf: DNF,
+	pub(crate) positive_dnf: DNF<SIZE>,
 	/// Classifying DNF of the negative samples.
-	pub(crate) negative_dnf: DNF,
+	pub(crate) negative_dnf: DNF<SIZE>,
 }
 
-impl State {
+impl<const SIZE: usize> State<SIZE> {
 	/// Whether the state is feasible under the data,
 	/// i.e. the positive and negative DNF exactly classify the positive and negative
 	/// samples, respectively.
-	pub fn is_feasible(&self, positive_samples: &[Sample], negative_samples: &[Sample]) -> bool {
+	pub fn is_feasible(&self, positive_samples: &[Sample<SIZE>], negative_samples: &[Sample<SIZE>]) -> bool {
 		trace!("Starting feasibility testing.");
 		let positive_feasible = positive_samples
 			.par_iter()

@@ -36,7 +36,7 @@ pub trait ToImage {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind>;
 }
 
-impl ToImage for Clause {
+impl<const SIZE: usize> ToImage for Clause<SIZE> {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
 
@@ -54,7 +54,7 @@ impl ToImage for Clause {
 	}
 }
 
-impl ToImage for DNF {
+impl<const SIZE: usize> ToImage for DNF<SIZE> {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		#[allow(clippy::cast_possible_truncation)]
 		let clause_count = self.clauses().len() as u32;
@@ -96,7 +96,7 @@ impl ToImage for DNF {
 	}
 }
 
-impl ToImage for Sample {
+impl<const SIZE: usize> ToImage for Sample<SIZE> {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
 

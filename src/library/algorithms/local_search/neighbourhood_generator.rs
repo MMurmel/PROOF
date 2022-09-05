@@ -19,7 +19,7 @@ pub enum NeighbourhoodGenerator {
 
 impl NeighbourhoodGenerator {
 	/// Generates the neighbourhood of the `DNF` according to the generator strategy.
-	pub fn generate_neighbourhood(&self, state: &State) -> Vec<State> {
+	pub fn generate_neighbourhood<const SIZE: usize>(&self, state: &State<SIZE>) -> Vec<State<SIZE>> {
 		debug!("Started generating neighbourhood.");
 		let mut result = Vec::new();
 		match self {

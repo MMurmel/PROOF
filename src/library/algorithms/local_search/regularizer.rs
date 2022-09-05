@@ -21,7 +21,7 @@ pub enum Regularizer {
 
 impl Regularizer {
 	/// Return the regularization value for the DNF according to the `Strategy`.
-	pub fn regularize(&self, state: &State) -> u32 {
+	pub fn regularize<const SIZE: usize>(&self, state: &State<SIZE>) -> u32 {
 		match self {
 			Self::Depth => state.positive_dnf.depth() + state.negative_dnf.depth(),
 			Self::Length => state.positive_dnf.length() + state.negative_dnf.length(),
