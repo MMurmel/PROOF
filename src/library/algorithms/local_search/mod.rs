@@ -10,6 +10,10 @@ use std::io::{
 	Write,
 };
 use std::path::Path;
+use bitmaps::{
+	Bits,
+	BitsImpl,
+};
 use log::{
 	debug,
 	info,
@@ -34,7 +38,10 @@ pub mod run_config;
 /// A basic hill climber
 ///
 /// # Panics
-pub fn basic_hill_climber(run_config: &RunConfig) {
+pub fn basic_hill_climber<const DATA_DIM: usize>(run_config: &RunConfig<DATA_DIM>)
+where
+	BitsImpl<DATA_DIM>: Bits,
+{
 	debug!("Starting hill climber with config {:?}", run_config);
 	let regularizer = run_config.regularizer;
 	let BasicHillClimber(max_iterations) = run_config.algorithm;
@@ -49,16 +56,17 @@ pub fn basic_hill_climber(run_config: &RunConfig) {
 	let mut metrics_file =
 		File::create(&metrics_path.join("metrics")).expect("Could not create metrics file.");
 
-	let (positive_samples, negative_samples): (Vec<_>, Vec<_>) = BufReader::new(data_file)
-		.lines()
-		.filter_map(Result::ok)
-		.filter_map(|line| serde_json::from_str(&line).ok())
-		.partition(Sample::label);
+	let (positive_samples, negative_samples): (Vec<Sample<DATA_DIM>>, Vec<Sample<DATA_DIM>>) =
+		BufReader::new(data_file)
+			.lines()
+			.filter_map(Result::ok)
+			.filter_map(|line| serde_json::from_str(&line).ok())
+			.partition(Sample::label);
 
-	let positive_dnf = DNF::new(positive_samples.par_iter().map(Clause::from).collect());
-	let negative_dnf = DNF::new(negative_samples.par_iter().map(Clause::from).collect());
+	let positive_dnf = DNF::new(positive_samples.iter().map(Clause::from).collect());
+	let negative_dnf = DNF::new(negative_samples.iter().map(Clause::from).collect());
 
-	let mut current_state = State {
+	let mut current_state: State<DATA_DIM> = State {
 		positive_dnf,
 		negative_dnf,
 	};
@@ -99,9 +107,9 @@ pub fn basic_hill_climber(run_config: &RunConfig) {
 
 		let best_neighbour = run_config
 			.neighbourhood_generators
-			.par_iter()
+			.iter()
 			.flat_map(|generator| generator.generate_neighbourhood(&current_state))
-			.filter(|state| state.is_feasible(positive_samples.as_slice(), negative_samples.as_slice()))
+			.filter(|state| state.is_feasible(&positive_samples, &negative_samples))
 			.min_by(|a, b| regularizer.regularize(a).cmp(&regularizer.regularize(b)));
 
 		match best_neighbour {

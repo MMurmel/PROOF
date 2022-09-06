@@ -9,7 +9,7 @@ use crate::algorithms::local_search::run_config::Algorithm::BasicHillClimber;
 
 /// Holds information about all possibly configurable parameters of a run.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct RunConfig {
+pub struct RunConfig<const DATA_DIM: usize> {
 	/// How often this configuration should be run.
 	pub run_count:                u32,
 	/// The path to the data sample file.
@@ -24,7 +24,11 @@ pub struct RunConfig {
 	pub algorithm:                Algorithm,
 }
 
-impl Default for RunConfig {
+impl<const DATA_DIM: usize> RunConfig<DATA_DIM> {
+	pub const fn data_dim(&self) -> usize { DATA_DIM }
+}
+
+impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 	fn default() -> Self {
 		Self {
 			run_count:                1,

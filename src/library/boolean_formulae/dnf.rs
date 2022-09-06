@@ -1,26 +1,32 @@
 //! Provides representation for disjunctive normal form boolean formulae.
 
+use bitmaps::{
+	Bits,
+	BitsImpl,
+};
 use serde::{
 	Serialize,
 	Deserialize,
 };
 
-use rayon::iter::{
-	IntoParallelRefIterator,
-	ParallelIterator,
-};
 use crate::boolean_formulae::clause::Clause;
 use crate::boolean_formulae::data::{Sample,};
 use crate::boolean_formulae::evaluation::{Evaluate,};
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 /// The representation of a DNF, i.e. a disjunction of clauses.
-pub struct DNF<const SIZE: usize> {
+pub struct DNF<const SIZE: usize>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	/// The disjunction of clauses.
 	clauses: Vec<Clause<SIZE>>,
 }
 
-impl<const SIZE: usize> DNF<SIZE> {
+impl<const SIZE: usize> DNF<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	/// Constructs a new `DNF` from a vector of clauses.
 	#[must_use]
 	pub fn new(clauses: Vec<Clause<SIZE>>) -> Self { Self { clauses } }
@@ -62,10 +68,13 @@ impl<const SIZE: usize> DNF<SIZE> {
 	}
 }
 
-impl<const SIZE: usize> Evaluate<SIZE> for DNF<SIZE> {
+impl<const SIZE: usize> Evaluate<SIZE> for DNF<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	fn evaluate(&self, data: &Sample<SIZE>) -> bool {
 		self.clauses
-			.par_iter()
+			.iter()
 			.map(|literal| literal.evaluate(data))
 			.any(|x| x)
 	}

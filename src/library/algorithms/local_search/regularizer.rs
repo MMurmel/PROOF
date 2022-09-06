@@ -1,5 +1,9 @@
 //! Provides different regularizers for `DNF`s.
 
+use bitmaps::{
+	Bits,
+	BitsImpl,
+};
 use serde::{
 	Serialize,
 	Deserialize,
@@ -21,7 +25,10 @@ pub enum Regularizer {
 
 impl Regularizer {
 	/// Return the regularization value for the DNF according to the `Strategy`.
-	pub fn regularize<const SIZE: usize>(&self, state: &State<SIZE>) -> u32 {
+	pub fn regularize<const SIZE: usize>(&self, state: &State<SIZE>) -> u32
+	where
+		BitsImpl<SIZE>: Bits,
+	{
 		match self {
 			Self::Depth => state.positive_dnf.depth() + state.negative_dnf.depth(),
 			Self::Length => state.positive_dnf.length() + state.negative_dnf.length(),

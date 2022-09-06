@@ -1,5 +1,9 @@
 //! Provides neighbourhood generation methods for run state.
 
+use bitmaps::{
+	Bits,
+	BitsImpl,
+};
 use log::debug;
 
 use serde::{
@@ -19,17 +23,20 @@ pub enum NeighbourhoodGenerator {
 
 impl NeighbourhoodGenerator {
 	/// Generates the neighbourhood of the `DNF` according to the generator strategy.
-	pub fn generate_neighbourhood<const SIZE: usize>(&self, state: &State<SIZE>) -> Vec<State<SIZE>> {
+	pub fn generate_neighbourhood<const SIZE: usize>(&self, state: &State<SIZE>) -> Vec<State<SIZE>>
+	where
+		BitsImpl<SIZE>: Bits,
+	{
 		debug!("Started generating neighbourhood.");
 		let mut result = Vec::new();
 		match self {
 			Self::RemoveOneLiteral => {
 				// Neighbours of the state by removing one literal from the positive dnf.
 				for (id, clause) in state.positive_dnf.clauses().iter().enumerate() {
-					for literal in clause.literals() {
+					for present_id in clause.literals() {
 						let mut cloned_dnf = state.positive_dnf.clone();
 						let selected_clause = cloned_dnf.mut_clauses().get_mut(id).unwrap();
-						selected_clause.remove_literal(literal.feature_id());
+						selected_clause.remove_literal(present_id);
 						result.push(State {
 							positive_dnf: cloned_dnf,
 							negative_dnf: state.negative_dnf.clone(),
@@ -38,10 +45,10 @@ impl NeighbourhoodGenerator {
 				}
 				// Neighbours of the state by removing one literal from the negative dnf.
 				for (id, clause) in state.negative_dnf.clauses().iter().enumerate() {
-					for literal in clause.literals() {
+					for present_id in clause.literals() {
 						let mut cloned_dnf = state.negative_dnf.clone();
 						let selected_clause = cloned_dnf.mut_clauses().get_mut(id).unwrap();
-						selected_clause.remove_literal(literal.feature_id());
+						selected_clause.remove_literal(present_id);
 						result.push(State {
 							positive_dnf: state.positive_dnf.clone(),
 							negative_dnf: cloned_dnf,
