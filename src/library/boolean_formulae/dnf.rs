@@ -4,6 +4,7 @@ use bitmaps::{
 	Bits,
 	BitsImpl,
 };
+use rayon::prelude::*;
 use serde::{
 	Serialize,
 	Deserialize,
@@ -74,7 +75,7 @@ where
 {
 	fn evaluate(&self, data: &Sample<SIZE>) -> bool {
 		self.clauses
-			.iter()
+			.par_iter()
 			.map(|literal| literal.evaluate(data))
 			.any(|x| x)
 	}

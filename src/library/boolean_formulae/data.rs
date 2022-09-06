@@ -125,3 +125,5 @@ where
 		Ok(Sample::from(wrapper))
 	}
 }
+unsafe impl<const SIZE: usize> Send for Sample<SIZE> where BitsImpl<SIZE>: Bits {}
+unsafe impl<const SIZE: usize> Sync for Sample<SIZE> where BitsImpl<SIZE>: Bits {}

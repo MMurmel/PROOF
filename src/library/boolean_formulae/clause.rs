@@ -208,3 +208,6 @@ where
 		Ok(Clause::from(wrapper))
 	}
 }
+
+unsafe impl<const SIZE: usize> Send for Clause<SIZE> where BitsImpl<SIZE>: Bits {}
+unsafe impl<const SIZE: usize> Sync for Clause<SIZE> where BitsImpl<SIZE>: Bits {}

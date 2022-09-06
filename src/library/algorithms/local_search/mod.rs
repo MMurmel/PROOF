@@ -18,10 +18,7 @@ use log::{
 	debug,
 	info,
 };
-use rayon::iter::{
-	IntoParallelRefIterator,
-	ParallelIterator,
-};
+use rayon::prelude::*;
 use crate::algorithms::local_search::run_config::Algorithm::BasicHillClimber;
 use crate::algorithms::local_search::run_config::RunConfig;
 use crate::algorithms::local_search::state::State;
@@ -63,8 +60,8 @@ where
 			.filter_map(|line| serde_json::from_str(&line).ok())
 			.partition(Sample::label);
 
-	let positive_dnf = DNF::new(positive_samples.iter().map(Clause::from).collect());
-	let negative_dnf = DNF::new(negative_samples.iter().map(Clause::from).collect());
+	let positive_dnf = DNF::new(positive_samples.par_iter().map(Clause::from).collect());
+	let negative_dnf = DNF::new(negative_samples.par_iter().map(Clause::from).collect());
 
 	let mut current_state: State<DATA_DIM> = State {
 		positive_dnf,
@@ -107,7 +104,7 @@ where
 
 		let best_neighbour = run_config
 			.neighbourhood_generators
-			.iter()
+			.par_iter()
 			.flat_map(|generator| generator.generate_neighbourhood(&current_state))
 			.filter(|state| state.is_feasible(&positive_samples, &negative_samples))
 			.min_by(|a, b| regularizer.regularize(a).cmp(&regularizer.regularize(b)));
