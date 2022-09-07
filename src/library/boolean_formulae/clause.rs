@@ -20,14 +20,20 @@ use crate::boolean_formulae::data::{
 };
 use crate::boolean_formulae::evaluation::{Evaluate,};
 
+/// A Helper for easier Serialization and Deserialization Access.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Literal {
+	/// The Feature this literal evaluates.
 	id:     FeatureID,
+	/// The Literal parity, i.e. `false` if the literal is negated
+	/// and `true` if it is not negated.
 	parity: bool,
 }
 
+/// A Wrapper for easier Serialization and Deserialization Access.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct ClauseWrapper {
+	/// The Clauses Literals in order.
 	literals: Vec<Literal>,
 }
 
@@ -61,11 +67,11 @@ where
 {
 	fn from(clause: Clause<SIZE>) -> Self {
 		let mut literals = Vec::new();
-		for index in clause.appearances.into_iter() {
+		for index in &clause.appearances {
 			literals.push(Literal {
 				id:     index,
 				parity: clause.polarities.get(index),
-			})
+			});
 		}
 		Self { literals }
 	}
@@ -77,25 +83,30 @@ pub struct Clause<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
 {
-	/// The conjunction of literals.
+	/// A Bitmap representing, whether a literal is present in the clause.
 	appearances: Bitmap<SIZE>,
+	/// For the indices that are `true` in appearances, this specifies the literals
+	/// parity. For all other indices this bitmaps content is meaningless.
 	polarities:  Bitmap<SIZE>,
+}
+
+impl<const SIZE: usize> Default for Clause<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
+	fn default() -> Self {
+		Self {
+			appearances: Bitmap::new(),
+			polarities:  Bitmap::new(),
+		}
+	}
 }
 
 impl<const SIZE: usize> Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
 {
-	/// Construct a `Clause` from a set of literals.
-	#[must_use]
-	pub fn new() -> Self {
-		Self {
-			appearances: Bitmap::new(),
-			polarities:  Bitmap::new(),
-		}
-	}
-
-	/// Whether the clause is empty, i.e. contains only `None` for every `FeatureID`
+	/// Whether the clause is empty.
 	#[must_use]
 	pub fn is_empty(&self) -> bool { self.appearances.is_empty() }
 
@@ -103,23 +114,27 @@ where
 	#[must_use]
 	pub fn length(&self) -> usize { self.appearances.len() }
 
-	/// Returns a reference to the literals of the `Clause`.
+	/// Returns all indices for which a literal is present in the clause.
 	#[must_use]
-	pub fn literals(&self) -> Vec<FeatureID> { self.appearances.into_iter().collect() }
+	pub fn literal_indices(&self) -> Vec<FeatureID> { self.appearances.into_iter().collect() }
 
-	pub fn literal_at(&self, feature_id: FeatureID) -> bool {
-		assert!(
-			feature_id < SIZE,
-			"Index {} was out of bounce for clause of size {}!",
-			feature_id,
-			SIZE
-		);
-		self.polarities.get(feature_id)
+	/// Returns the parity of the literal with the specified `FeatureID`.
+	/// If the literal is not present or the id is too big for this clause,
+	/// `None` is returned.
+	pub fn literal_at(&self, feature_id: FeatureID) -> Option<bool> {
+		if feature_id >= SIZE || !self.appearances.get(feature_id) {
+			None
+		} else {
+			Some(self.polarities.get(feature_id))
+		}
 	}
 
 	/// Adds a literal to the clause, potentially replacing a previously contained literal
 	/// with the same `FeatureID` and different polarity.
 	/// Returns the replaced value.
+	///
+	/// # Panics
+	/// Panics if `feature_id >= SIZE`.
 	pub fn insert_literal(&mut self, feature_id: FeatureID, parity: bool) -> Option<bool> {
 		assert!(
 			feature_id < SIZE,
@@ -128,7 +143,7 @@ where
 			SIZE
 		);
 		trace!("Trying to insert {{x_{}: {}}} into clause.", feature_id, parity);
-		return if self.appearances.get(feature_id) {
+		if self.appearances.get(feature_id) {
 			let result = Some(self.polarities.get(feature_id));
 			self.polarities.set(feature_id, parity);
 			result
@@ -136,11 +151,14 @@ where
 			self.appearances.set(feature_id, true);
 			self.polarities.set(feature_id, parity);
 			None
-		};
+		}
 	}
 
 	/// Removes the literal with the given `FeatureID` from the `Clause`
 	/// and returns whether it was present.
+	///
+	/// # Panics
+	/// Panics if `feature_id >= SIZE`.
 	pub fn remove_literal(&mut self, feature_id: FeatureID) -> bool {
 		assert!(
 			feature_id < SIZE,

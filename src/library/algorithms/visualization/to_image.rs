@@ -37,7 +37,7 @@ pub trait ToImage {
 	///
 	/// # Errors
 	/// Will return `ErrorKind::WrongDimensions` if `width * height` is not the same as
-	/// the clause dimensionality.
+	/// the dimensionality of the data type.
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind>;
 }
 
@@ -48,14 +48,15 @@ where
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
 
-		for present_id in self.literals() {
+		for present_id in self.literal_indices() {
+			#[allow(clippy::cast_possible_truncation)]
 			let present_id = present_id as u32;
 			if present_id >= width * height {
 				return Err(ErrorKind::WrongDimensions);
 			}
 			let column = present_id % width;
 			let row = present_id / width;
-			let color: (u8, u8, u8) = if self.literal_at(present_id as usize) {
+			let color: (u8, u8, u8) = if self.literal_at(present_id as usize).unwrap() {
 				GREEN
 			} else {
 				RED
@@ -117,19 +118,17 @@ where
 {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
+		let features = self.features();
 
 		for id in 0..SIZE {
+			#[allow(clippy::cast_possible_truncation)]
 			let id = id as u32;
 			if id >= width * height {
 				return Err(ErrorKind::WrongDimensions);
 			}
 			let column = id % width;
 			let row = id / width;
-			let color: (u8, u8, u8) = if self.feature_at(id as usize) {
-				WHITE
-			} else {
-				BLACK
-			};
+			let color: (u8, u8, u8) = if features.get(id as usize) { WHITE } else { BLACK };
 			image.put_pixel(column, row, Rgb::from([color.0, color.1, color.2]));
 		}
 		Ok(image)

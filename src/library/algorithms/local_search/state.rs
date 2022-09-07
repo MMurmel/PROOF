@@ -4,6 +4,7 @@ use bitmaps::{
 	BitsImpl,
 };
 use log::{trace,};
+use rayon::prelude::*;
 use crate::boolean_formulae::data::Sample;
 use crate::boolean_formulae::dnf::DNF;
 use crate::boolean_formulae::evaluation::Evaluate;
@@ -27,18 +28,14 @@ where
 	/// Whether the state is feasible under the data,
 	/// i.e. the positive and negative DNF exactly classify the positive and negative
 	/// samples, respectively.
-	pub fn is_feasible(
-		&self,
-		positive_samples: &Vec<Sample<SIZE>>,
-		negative_samples: &Vec<Sample<SIZE>>,
-	) -> bool {
+	pub fn is_feasible(&self, positive_samples: &[Sample<SIZE>], negative_samples: &[Sample<SIZE>]) -> bool {
 		trace!("Starting feasibility testing.");
 		let positive_feasible = positive_samples
-			.iter()
+			.par_iter()
 			.map(|x| self.positive_dnf.evaluate(x))
 			.all(|x| x);
 		let negative_feasible = negative_samples
-			.iter()
+			.par_iter()
 			.map(|x| self.negative_dnf.evaluate(x))
 			.all(|x| x);
 

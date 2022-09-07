@@ -3,9 +3,9 @@
 /// This module handles command lines arguments, utilizing [`clap`].
 pub mod arguments;
 
-/// ## Basic Boolean Datastructures
+/// ## Basic Datastructures for Boolean Formulae
 ///
-/// This module handles boolean atoms, literals, DNFs and their evaluation.
+/// This module handles boolean literals, DNFs and their evaluation over Data.
 pub mod boolean_formulae;
 
 /// ## Algorithm Implementations

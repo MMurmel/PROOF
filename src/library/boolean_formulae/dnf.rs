@@ -51,9 +51,9 @@ where
 			.unwrap_or_default()
 	}
 
-	/// Returns the clauses of the `DNF`.
+	/// Returns a reference to the clauses of the `DNF`.
 	#[must_use]
-	pub fn clauses(&self) -> &[Clause<SIZE>] { self.clauses.as_slice() }
+	pub const fn clauses(&self) -> &Vec<Clause<SIZE>> { &self.clauses }
 
 	/// Returns a mutable reference to the clauses of the `DNF`.
 	#[must_use]

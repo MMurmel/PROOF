@@ -42,8 +42,6 @@ use proof::algorithms::local_search::run_config::{RunConfig,};
 use proof::arguments::Arguments;
 
 /// ### `main`
-///
-/// A simple, plain old `main` function. Nothing mysterious here.
 fn main() {
 	info!("Welcome to PROOF.");
 	let arguments = Arguments::cli_args();

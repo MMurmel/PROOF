@@ -10,10 +10,8 @@ use serde::{
 };
 use crate::algorithms::local_search::state::State;
 
-/// Distinguishes different ways to regularize a DNF.
+/// Distinguishes different strategies to regularize a DNF.
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-// Due to a bug in serde, a false positive of this lint occurs here.
-#[allow(clippy::use_self)]
 pub enum Regularizer {
 	/// Only penalize depth of the DNF.
 	Depth,
@@ -24,8 +22,8 @@ pub enum Regularizer {
 }
 
 impl Regularizer {
-	/// Return the regularization value for the DNF according to the `Strategy`.
-	pub fn regularize<const SIZE: usize>(&self, state: &State<SIZE>) -> u32
+	/// Return the regularization value for the DNF according to the chosen strategy.
+	pub fn regularize<const SIZE: usize>(self, state: &State<SIZE>) -> u32
 	where
 		BitsImpl<SIZE>: Bits,
 	{

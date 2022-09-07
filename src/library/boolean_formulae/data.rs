@@ -11,12 +11,15 @@ use serde::{
 	Serializer,
 	Deserializer,
 };
-/// Each feature of the data is identified by a single number.
+/// Identifier type for features of data.
 pub type FeatureID = usize;
 
 #[derive(Debug, Serialize, Deserialize)]
+/// A Wrapper for easier Serialization and Deserialization Access.
 struct SampleWrapper {
+	/// The Samples Label
 	label:    bool,
+	/// The Samples features, in order.
 	features: Vec<bool>,
 }
 
@@ -59,7 +62,7 @@ where
 	}
 }
 
-/// The general struct to represent a manifestation of the feature space.
+/// Represents a manifestation of the feature space in a bitmap format.
 #[derive(Debug, Clone)]
 pub struct Sample<const SIZE: usize>
 where
@@ -77,7 +80,7 @@ where
 {
 	/// Creates a sample from a manifestation of a feature space.
 	#[must_use]
-	pub fn new(label: bool, features: Bitmap<SIZE>) -> Self { Self { label, features } }
+	pub const fn new(label: bool, features: Bitmap<SIZE>) -> Self { Self { label, features } }
 
 	/// Returns the label of the sample.
 	#[must_use]
@@ -85,19 +88,7 @@ where
 
 	/// Returns the features of the sample.
 	#[must_use]
-	pub fn features(&self) -> Bitmap<{ SIZE }> { self.features.clone() }
-
-	/// Gets the data at the specified index, i.e. the assignment of the specified
-	/// variable.
-	pub fn feature_at(&self, feature_id: FeatureID) -> bool {
-		assert!(
-			feature_id < SIZE,
-			"Index {} was out of bounce for clause of size {}!",
-			feature_id,
-			SIZE
-		);
-		self.features.get(feature_id)
-	}
+	pub const fn features(&self) -> Bitmap<{ SIZE }> { self.features }
 }
 
 impl<const SIZE: usize> Serialize for Sample<SIZE>
@@ -122,7 +113,7 @@ where
 		D: Deserializer<'de>,
 	{
 		let wrapper = SampleWrapper::deserialize(deserializer)?;
-		Ok(Sample::from(wrapper))
+		Ok(Self::from(wrapper))
 	}
 }
 unsafe impl<const SIZE: usize> Send for Sample<SIZE> where BitsImpl<SIZE>: Bits {}

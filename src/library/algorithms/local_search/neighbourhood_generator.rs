@@ -33,7 +33,7 @@ impl NeighbourhoodGenerator {
 			Self::RemoveOneLiteral => {
 				// Neighbours of the state by removing one literal from the positive dnf.
 				for (id, clause) in state.positive_dnf.clauses().iter().enumerate() {
-					for present_id in clause.literals() {
+					for present_id in clause.literal_indices() {
 						let mut cloned_dnf = state.positive_dnf.clone();
 						let selected_clause = cloned_dnf.mut_clauses().get_mut(id).unwrap();
 						selected_clause.remove_literal(present_id);
@@ -45,7 +45,7 @@ impl NeighbourhoodGenerator {
 				}
 				// Neighbours of the state by removing one literal from the negative dnf.
 				for (id, clause) in state.negative_dnf.clauses().iter().enumerate() {
-					for present_id in clause.literals() {
+					for present_id in clause.literal_indices() {
 						let mut cloned_dnf = state.negative_dnf.clone();
 						let selected_clause = cloned_dnf.mut_clauses().get_mut(id).unwrap();
 						selected_clause.remove_literal(present_id);
