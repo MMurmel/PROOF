@@ -1,15 +1,17 @@
 //! Provides different regularizers for `DNF`s.
 
+use bitmaps::{
+	Bits,
+	BitsImpl,
+};
 use serde::{
 	Serialize,
 	Deserialize,
 };
 use crate::algorithms::local_search::state::State;
 
-/// Distinguishes different ways to regularize a DNF.
+/// Distinguishes different strategies to regularize a DNF.
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-// Due to a bug in serde, a false positive of this lint occurs here.
-#[allow(clippy::use_self)]
 pub enum Regularizer {
 	/// Only penalize depth of the DNF.
 	Depth,
@@ -20,8 +22,11 @@ pub enum Regularizer {
 }
 
 impl Regularizer {
-	/// Return the regularization value for the DNF according to the `Strategy`.
-	pub fn regularize(&self, state: &State) -> u32 {
+	/// Return the regularization value for the DNF according to the chosen strategy.
+	pub fn regularize<const SIZE: usize>(self, state: &State<SIZE>) -> u32
+	where
+		BitsImpl<SIZE>: Bits,
+	{
 		match self {
 			Self::Depth => state.positive_dnf.depth() + state.negative_dnf.depth(),
 			Self::Length => state.positive_dnf.length() + state.negative_dnf.length(),

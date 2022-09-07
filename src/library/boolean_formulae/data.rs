@@ -1,25 +1,86 @@
 //! Provides representation of boolean data over multidimensional feature-space.
 
+use bitmaps::{
+	Bitmap,
+	Bits,
+	BitsImpl,
+};
 use serde::{
 	Serialize,
 	Deserialize,
+	Serializer,
+	Deserializer,
 };
-/// Each feature of the data is identified by a single number.
-pub type FeatureID = u32;
+/// Identifier type for features of data.
+pub type FeatureID = usize;
 
-/// The general struct to represent a manifestation of the feature space.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Sample {
-	/// The label of the sample.
+/// A Wrapper for easier Serialization and Deserialization Access.
+struct SampleWrapper {
+	/// The Samples Label
 	label:    bool,
-	/// The data of the sample.
+	/// The Samples features, in order.
 	features: Vec<bool>,
 }
 
-impl Sample {
+impl<const SIZE: usize> From<SampleWrapper> for Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
+	fn from(wrapper: SampleWrapper) -> Self {
+		assert_eq!(
+			wrapper.features.len(),
+			SIZE,
+			"Could not cast ClauseWrapper to Clause due to difference in length: \
+			 ClauseWrapper.features.len(): {}, SIZE: {}",
+			wrapper.features.len(),
+			SIZE
+		);
+		let mut features: Bitmap<SIZE> = Bitmap::new();
+		for (index, &feature) in wrapper.features.iter().enumerate() {
+			features.set(index, feature);
+		}
+		Self {
+			label: wrapper.label,
+			features,
+		}
+	}
+}
+
+impl<const SIZE: usize> From<Sample<SIZE>> for SampleWrapper
+where
+	BitsImpl<SIZE>: Bits,
+{
+	fn from(sample: Sample<SIZE>) -> Self {
+		Self {
+			label:    sample.label,
+			features: (0..sample.features.len())
+				.into_iter()
+				.map(|index| sample.features.get(index))
+				.collect(),
+		}
+	}
+}
+
+/// Represents a manifestation of the feature space in a bitmap format.
+#[derive(Debug, Clone)]
+pub struct Sample<const SIZE: usize>
+where
+	BitsImpl<SIZE>: Bits,
+{
+	/// The label of the sample.
+	label:    bool,
+	/// The data of the sample.
+	features: Bitmap<SIZE>,
+}
+
+impl<const SIZE: usize> Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	/// Creates a sample from a manifestation of a feature space.
 	#[must_use]
-	pub fn new(label: bool, features: Vec<bool>) -> Self { Self { label, features } }
+	pub const fn new(label: bool, features: Bitmap<SIZE>) -> Self { Self { label, features } }
 
 	/// Returns the label of the sample.
 	#[must_use]
@@ -27,10 +88,33 @@ impl Sample {
 
 	/// Returns the features of the sample.
 	#[must_use]
-	pub fn features(&self) -> &[bool] { self.features.as_slice() }
-
-	/// Gets the data at the specified index, i.e. the assignment of the specified
-	/// variable.
-	#[must_use]
-	pub fn at_feature(&self, index: FeatureID) -> Option<&bool> { self.features.get(index as usize) }
+	pub const fn features(&self) -> Bitmap<{ SIZE }> { self.features }
 }
+
+impl<const SIZE: usize> Serialize for Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		let wrapper = SampleWrapper::from(self.clone());
+		wrapper.serialize(serializer)
+	}
+}
+
+impl<'de, const SIZE: usize> Deserialize<'de> for Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		let wrapper = SampleWrapper::deserialize(deserializer)?;
+		Ok(Self::from(wrapper))
+	}
+}
+unsafe impl<const SIZE: usize> Send for Sample<SIZE> where BitsImpl<SIZE>: Bits {}
+unsafe impl<const SIZE: usize> Sync for Sample<SIZE> where BitsImpl<SIZE>: Bits {}

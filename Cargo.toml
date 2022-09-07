@@ -66,6 +66,8 @@ rand = "0.8.5"
 # Image creation
 image = "0.24.3"
 rayon = "1.5"
+# Bitmaps for faster data access
+bitmaps = "3.2.0"
 
 # -----------------------------------------------
 # ----  Workspace  ------------------------------

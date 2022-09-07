@@ -42,8 +42,6 @@ use proof::algorithms::local_search::run_config::{RunConfig,};
 use proof::arguments::Arguments;
 
 /// ### `main`
-///
-/// A simple, plain old `main` function. Nothing mysterious here.
 fn main() {
 	info!("Welcome to PROOF.");
 	let arguments = Arguments::cli_args();
@@ -52,7 +50,7 @@ fn main() {
 		.filter_level(arguments.log_level())
 		.init();
 
-	let config: RunConfig = arguments.config.as_deref().map_or_else(
+	let config: RunConfig<784> = arguments.config.as_deref().map_or_else(
 		|| {
 			debug!("Starting PROOF with default config file.");
 			RunConfig::default()

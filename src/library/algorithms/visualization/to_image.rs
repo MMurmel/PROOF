@@ -1,5 +1,9 @@
 //! This module provides the conversion to an image from clauses and DNFs respectively.
 use std::collections::HashMap;
+use bitmaps::{
+	Bits,
+	BitsImpl,
+};
 use image::{
 	Rgb,
 	RgbImage,
@@ -21,8 +25,8 @@ use crate::boolean_formulae::dnf::DNF;
 /// Error Enum for converting logic formulas into images.
 #[derive(Debug)]
 pub enum ErrorKind {
-	/// The provided Image Dimensions were to small to fit the whole formula.
-	DimensionsTooSmall,
+	/// The provided Image Dimensions were too small or too big to fit the whole formula.
+	WrongDimensions,
 	/// Something unexpected happened.
 	UnknownError,
 }
@@ -32,29 +36,41 @@ pub trait ToImage {
 	/// Convert into an image with the given dimensions.
 	///
 	/// # Errors
-	/// Will
+	/// Will return `ErrorKind::WrongDimensions` if `width * height` is not the same as
+	/// the dimensionality of the data type.
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind>;
 }
 
-impl ToImage for Clause {
+impl<const SIZE: usize> ToImage for Clause<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
 
-		for literal in self.literals() {
-			let feature_id = literal.feature_id();
-			if feature_id >= width * height {
-				return Err(ErrorKind::DimensionsTooSmall);
+		for present_id in self.literal_indices() {
+			#[allow(clippy::cast_possible_truncation)]
+			let present_id = present_id as u32;
+			if present_id >= width * height {
+				return Err(ErrorKind::WrongDimensions);
 			}
-			let column = feature_id % width;
-			let row = feature_id / width;
-			let color: (u8, u8, u8) = if literal.parity() { GREEN } else { RED };
+			let column = present_id % width;
+			let row = present_id / width;
+			let color: (u8, u8, u8) = if self.literal_at(present_id as usize).unwrap() {
+				GREEN
+			} else {
+				RED
+			};
 			image.put_pixel(column, row, Rgb::from([color.0, color.1, color.2]));
 		}
 		Ok(image)
 	}
 }
 
-impl ToImage for DNF {
+impl<const SIZE: usize> ToImage for DNF<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		#[allow(clippy::cast_possible_truncation)]
 		let clause_count = self.clauses().len() as u32;
@@ -96,19 +112,23 @@ impl ToImage for DNF {
 	}
 }
 
-impl ToImage for Sample {
+impl<const SIZE: usize> ToImage for Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+{
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
+		let features = self.features();
 
-		for (id, literal) in self.features().iter().enumerate() {
+		for id in 0..SIZE {
 			#[allow(clippy::cast_possible_truncation)]
 			let id = id as u32;
 			if id >= width * height {
-				return Err(ErrorKind::DimensionsTooSmall);
+				return Err(ErrorKind::WrongDimensions);
 			}
 			let column = id % width;
 			let row = id / width;
-			let color: (u8, u8, u8) = if *literal { WHITE } else { BLACK };
+			let color: (u8, u8, u8) = if features.get(id as usize) { WHITE } else { BLACK };
 			image.put_pixel(column, row, Rgb::from([color.0, color.1, color.2]));
 		}
 		Ok(image)
