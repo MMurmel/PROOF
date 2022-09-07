@@ -13,7 +13,7 @@ use serde::{
 use crate::algorithms::local_search::state::State;
 
 /// Distinguishes different methods for generating Neighbourhoods of a `DNF`.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub enum NeighbourhoodGenerator {
 	/// Remove one literal.
 	RemoveOneLiteral,

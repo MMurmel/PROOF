@@ -11,6 +11,8 @@
     ],
     "regularizer": "DepthAndLength",
     "algorithm": {
-        "BasicHillClimber": 50
+        "BasicHillClimber": {
+            "max_iterations": 50
+        }
     }
 }

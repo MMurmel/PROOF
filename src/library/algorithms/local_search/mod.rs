@@ -9,17 +9,15 @@ use std::io::{
 	BufReader,
 	Write,
 };
-use std::path::Path;
+use std::path::{Path,};
 use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::{
-	debug,
-	info,
-};
+use log::{debug,};
 use rayon::prelude::*;
-use crate::algorithms::local_search::run_config::Algorithm::BasicHillClimber;
+use crate::algorithms::local_search::algorithms::AlgorithmRunner;
+use crate::algorithms::local_search::regularizer::Regularizer;
 use crate::algorithms::local_search::run_config::RunConfig;
 use crate::algorithms::local_search::state::State;
 use crate::algorithms::visualization::to_image::ToImage;
@@ -31,6 +29,7 @@ mod regularizer;
 mod neighbourhood_generator;
 mod state;
 pub mod run_config;
+mod algorithms;
 
 /// A basic hill climber
 ///
@@ -39,12 +38,7 @@ pub fn basic_hill_climber<const DATA_DIM: usize>(run_config: &RunConfig<DATA_DIM
 where
 	BitsImpl<DATA_DIM>: Bits,
 {
-	debug!("Starting hill climber with config {:?}", run_config);
-	let regularizer = run_config.regularizer;
-	let BasicHillClimber(max_iterations) = run_config.algorithm;
-
-	let data_file =
-		File::open(Path::new(&run_config.data_path)).expect("Could not open the data file you provided.");
+	debug!("Starting local search with config {:?}", run_config);
 
 	let output_path = Path::new("output");
 	let metrics_path = output_path.join("metrics");
@@ -53,6 +47,8 @@ where
 	let mut metrics_file =
 		File::create(&metrics_path.join("metrics")).expect("Could not create metrics file.");
 
+	let data_file =
+		File::open(Path::new(&run_config.data_path)).expect("Could not open the data file you provided.");
 	let (positive_samples, negative_samples): (Vec<Sample<DATA_DIM>>, Vec<Sample<DATA_DIM>>) =
 		BufReader::new(data_file)
 			.lines()
@@ -63,75 +59,95 @@ where
 	let positive_dnf = DNF::new(positive_samples.par_iter().map(Clause::from).collect());
 	let negative_dnf = DNF::new(negative_samples.par_iter().map(Clause::from).collect());
 
-	let mut current_state: State<DATA_DIM> = State {
+	let initial_state: State<DATA_DIM> = State {
 		positive_dnf,
 		negative_dnf,
 	};
-	let mut best_state = current_state.clone();
+	let mut best_state = initial_state.clone();
 
-	let mut iteration: u32 = 0;
+	let regularizer = run_config.regularizer;
+	let neighbourhood_generators = run_config.neighbourhood_generators.clone();
+	let algorithm = run_config.algorithm;
 
-	while iteration <= max_iterations {
-		info!("{}", iteration);
+	if let Some(_metrics) = &run_config.metrics {
+		save_metrics(&initial_state, &mut metrics_file, 0, regularizer);
+		generate_pictures(&initial_state, &metrics_path, 0);
+	}
+
+	let mut algorithm_runner = AlgorithmRunner::new(
+		algorithm,
+		initial_state,
+		positive_samples,
+		negative_samples,
+		neighbourhood_generators,
+		regularizer,
+	);
+
+	while let Some(current_state) = algorithm_runner.step() {
 		if let Some(metrics) = &run_config.metrics {
+			let iteration = algorithm_runner.iteration();
 			if iteration % metrics.regularizer_frequency == 0 {
-				metrics_file
-					.write_all(
-						format!(
-							"Iteration: {}: DNF-regularizer value: {}\n",
-							iteration,
-							regularizer.regularize(&current_state),
-						)
-						.as_bytes(),
-					)
-					.expect("Could not write to the metrics file.");
+				save_metrics(&current_state, &mut metrics_file, iteration, regularizer);
 			}
 			if iteration % metrics.picture_frequency == 0 {
-				current_state
-					.positive_dnf
-					.to_image(28, 28)
-					.unwrap()
-					.save(metrics_path.join(format!("iteration-{}-positive.png", iteration).as_str()))
-					.unwrap();
-				current_state
-					.negative_dnf
-					.to_image(28, 28)
-					.unwrap()
-					.save(metrics_path.join(format!("iteration-{}-negative.png", iteration).as_str()))
-					.unwrap();
+				generate_pictures(&current_state, &metrics_path, iteration);
 			}
 		}
 
-		let best_neighbour = run_config
-			.neighbourhood_generators
-			.par_iter()
-			.flat_map(|generator| generator.generate_neighbourhood(&current_state))
-			.filter(|state| state.is_feasible(&positive_samples, &negative_samples))
-			.min_by(|a, b| regularizer.regularize(a).cmp(&regularizer.regularize(b)));
-
-		match best_neighbour {
-			None => break,
-			Some(neighbour) => {
-				if regularizer.regularize(&neighbour) < regularizer.regularize(&best_state) {
-					best_state = neighbour.clone();
-				}
-				if regularizer.regularize(&neighbour) < regularizer.regularize(&current_state) {
-					current_state = neighbour.clone();
-				}
-			},
+		if regularizer.regularize(&current_state) < regularizer.regularize(&best_state) {
+			best_state = current_state.clone();
 		}
-
-		iteration += 1;
 	}
+
 	output_file
 		.write_all(
 			format!(
-				"Best state after {} iterations:\n Positive DNF: {}\n Negative DNF: {}",
-				iteration,
+				"Positive DNF: {}\n Negative DNF: {}",
 				serde_json::to_string(&best_state.positive_dnf).unwrap(),
 				serde_json::to_string(&best_state.negative_dnf).unwrap()
 			)
 			.as_bytes(),
 		)
 		.expect("Could not write final DNFs to output file.");
+}
+
+/// Creates Visualizations of the current state and saves them under the provided path
+/// with filenames distinguished by the current iteration.
+fn generate_pictures<const SIZE: usize>(state: &State<SIZE>, path: &Path, iteration: u32)
+where
+	BitsImpl<SIZE>: Bits,
+{
+	state
+		.positive_dnf
+		.to_image(28, 28)
+		.unwrap()
+		.save(path.join(format!("iteration-{}-positive.png", iteration).as_str()))
+		.unwrap();
+	state
+		.negative_dnf
+		.to_image(28, 28)
+		.unwrap()
+		.save(path.join(format!("iteration-{}-negative.png", iteration).as_str()))
+		.unwrap();
+}
+
+/// Writes metrics generated by the regularizer to the metrics file.
+fn save_metrics<const SIZE: usize>(
+	state: &State<SIZE>,
+	metrics_file: &mut File,
+	iteration: u32,
+	regularizer: Regularizer,
+) where
+	BitsImpl<SIZE>: Bits,
+{
+	metrics_file
+		.write_all(
+			format!(
+				"Iteration: {}: DNF-regularizer value: {}\n",
+				iteration,
+				regularizer.regularize(state),
+			)
+			.as_bytes(),
+		)
+		.expect("Could not write to the metrics file.");
 }
