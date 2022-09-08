@@ -1,5 +1,6 @@
 //! Provides neighbourhood generation methods for run state.
 
+use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
@@ -26,6 +27,7 @@ impl NeighbourhoodGenerator {
 	pub fn generate_neighbourhood<const SIZE: usize>(&self, state: &State<SIZE>) -> Vec<State<SIZE>>
 	where
 		BitsImpl<SIZE>: Bits,
+		<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 	{
 		debug!("Started generating neighbourhood.");
 		let mut result = Vec::new();

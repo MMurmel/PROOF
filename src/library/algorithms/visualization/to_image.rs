@@ -1,5 +1,6 @@
 //! This module provides the conversion to an image from clauses and DNFs respectively.
 use std::collections::HashMap;
+use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
@@ -44,6 +45,7 @@ pub trait ToImage {
 impl<const SIZE: usize> ToImage for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);
@@ -70,6 +72,7 @@ where
 impl<const SIZE: usize> ToImage for DNF<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		#[allow(clippy::cast_possible_truncation)]
@@ -115,6 +118,7 @@ where
 impl<const SIZE: usize> ToImage for Sample<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn to_image(&self, width: u32, height: u32) -> Result<RgbImage, ErrorKind> {
 		let mut image = RgbImage::new(width, height);

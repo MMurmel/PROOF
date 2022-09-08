@@ -1,4 +1,5 @@
 //! Any feasible solution to the local search problem is represented using this state.
+use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
@@ -14,6 +15,7 @@ use crate::boolean_formulae::evaluation::Evaluate;
 pub struct State<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// Classifying DNF of the positive samples.
 	pub(crate) positive_dnf: DNF<SIZE>,
@@ -24,6 +26,7 @@ where
 impl<const SIZE: usize> State<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// Whether the state is feasible under the data,
 	/// i.e. the positive and negative DNF exactly classify the positive and negative

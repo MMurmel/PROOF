@@ -1,5 +1,6 @@
 //! Provides representation of boolean data over multidimensional feature-space.
 
+use std::hash::Hash;
 use bitmaps::{
 	Bitmap,
 	Bits,
@@ -26,6 +27,7 @@ struct SampleWrapper {
 impl<const SIZE: usize> From<SampleWrapper> for Sample<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn from(wrapper: SampleWrapper) -> Self {
 		assert_eq!(
@@ -50,6 +52,7 @@ where
 impl<const SIZE: usize> From<Sample<SIZE>> for SampleWrapper
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn from(sample: Sample<SIZE>) -> Self {
 		Self {
@@ -67,6 +70,7 @@ where
 pub struct Sample<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// The label of the sample.
 	label:    bool,
@@ -77,6 +81,7 @@ where
 impl<const SIZE: usize> Sample<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// Creates a sample from a manifestation of a feature space.
 	#[must_use]
@@ -94,6 +99,7 @@ where
 impl<const SIZE: usize> Serialize for Sample<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
@@ -107,6 +113,7 @@ where
 impl<'de, const SIZE: usize> Deserialize<'de> for Sample<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
@@ -116,5 +123,15 @@ where
 		Ok(Self::from(wrapper))
 	}
 }
-unsafe impl<const SIZE: usize> Send for Sample<SIZE> where BitsImpl<SIZE>: Bits {}
-unsafe impl<const SIZE: usize> Sync for Sample<SIZE> where BitsImpl<SIZE>: Bits {}
+unsafe impl<const SIZE: usize> Send for Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
+{
+}
+unsafe impl<const SIZE: usize> Sync for Sample<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
+{
+}

@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
@@ -32,6 +33,7 @@ pub enum Algorithm {
 pub struct AlgorithmRunner<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// The algorithm to use.
 	algorithm:                Algorithm,
@@ -52,6 +54,7 @@ where
 impl<const SIZE: usize> AlgorithmRunner<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// Creates a new algorithms runner.
 	pub fn new(

@@ -1,6 +1,7 @@
 //! Provides representation and tools for clauses of disjunctive normal forms,
 //! i.e. conjunctions of boolean literals.
 
+use std::hash::Hash;
 use bitmaps::{
 	Bitmap,
 	Bits,
@@ -40,6 +41,7 @@ struct ClauseWrapper {
 impl<const SIZE: usize> From<ClauseWrapper> for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn from(wrapper: ClauseWrapper) -> Self {
 		assert_eq!(
@@ -64,6 +66,7 @@ where
 impl<const SIZE: usize> From<Clause<SIZE>> for ClauseWrapper
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn from(clause: Clause<SIZE>) -> Self {
 		let mut literals = Vec::new();
@@ -78,10 +81,11 @@ where
 }
 
 /// The representation of a DNF clause, i.e. a conjunction of literals.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Clause<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// A Bitmap representing, whether a literal is present in the clause.
 	appearances: Bitmap<SIZE>,
@@ -93,6 +97,7 @@ where
 impl<const SIZE: usize> Default for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn default() -> Self {
 		Self {
@@ -105,6 +110,7 @@ where
 impl<const SIZE: usize> Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	/// Whether the clause is empty.
 	#[must_use]
@@ -173,6 +179,7 @@ where
 impl<const SIZE: usize> Evaluate<SIZE> for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn evaluate(&self, data: &Sample<SIZE>) -> bool {
 		// XOR is a toggled inverter
@@ -193,6 +200,7 @@ where
 impl<const SIZE: usize> From<&Sample<SIZE>> for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn from(sample: &Sample<SIZE>) -> Self {
 		Self {
@@ -204,6 +212,7 @@ where
 impl<const SIZE: usize> Serialize for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
@@ -217,6 +226,7 @@ where
 impl<'de, const SIZE: usize> Deserialize<'de> for Clause<SIZE>
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
@@ -227,5 +237,15 @@ where
 	}
 }
 
-unsafe impl<const SIZE: usize> Send for Clause<SIZE> where BitsImpl<SIZE>: Bits {}
-unsafe impl<const SIZE: usize> Sync for Clause<SIZE> where BitsImpl<SIZE>: Bits {}
+unsafe impl<const SIZE: usize> Send for Clause<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
+{
+}
+unsafe impl<const SIZE: usize> Sync for Clause<SIZE>
+where
+	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
+{
+}

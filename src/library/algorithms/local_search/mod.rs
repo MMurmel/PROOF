@@ -4,6 +4,7 @@ use std::fs::{
 	create_dir_all,
 	File,
 };
+use std::hash::Hash;
 use std::io::{
 	BufRead,
 	BufReader,
@@ -14,7 +15,10 @@ use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::{debug,};
+use log::{
+	debug,
+	info,
+};
 use rayon::prelude::*;
 use crate::algorithms::local_search::algorithms::AlgorithmRunner;
 use crate::algorithms::local_search::regularizer::Regularizer;
@@ -37,6 +41,7 @@ mod algorithms;
 pub fn basic_hill_climber<const DATA_DIM: usize>(run_config: &RunConfig<DATA_DIM>)
 where
 	BitsImpl<DATA_DIM>: Bits,
+	<BitsImpl<{ DATA_DIM }> as Bits>::Store: Hash,
 {
 	debug!("Starting local search with config {:?}", run_config);
 
@@ -84,6 +89,7 @@ where
 	);
 
 	while let Some(current_state) = algorithm_runner.step() {
+		info!("In Iteration {}", algorithm_runner.iteration());
 		if let Some(metrics) = &run_config.metrics {
 			let iteration = algorithm_runner.iteration();
 			if iteration % metrics.regularizer_frequency == 0 {
@@ -116,6 +122,7 @@ where
 fn generate_pictures<const SIZE: usize>(state: &State<SIZE>, path: &Path, iteration: u32)
 where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	state
 		.positive_dnf
@@ -139,6 +146,7 @@ fn save_metrics<const SIZE: usize>(
 	regularizer: Regularizer,
 ) where
 	BitsImpl<SIZE>: Bits,
+	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	metrics_file
 		.write_all(

@@ -1,5 +1,6 @@
 //! Provides different regularizers for `DNF`s.
 
+use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
@@ -26,6 +27,7 @@ impl Regularizer {
 	pub fn regularize<const SIZE: usize>(self, state: &State<SIZE>) -> u32
 	where
 		BitsImpl<SIZE>: Bits,
+		<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 	{
 		match self {
 			Self::Depth => state.positive_dnf.depth() + state.negative_dnf.depth(),
