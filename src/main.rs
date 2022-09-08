@@ -62,9 +62,18 @@ fn main() {
 			for line in BufReader::new(config_file).lines().flatten() {
 				config_string.push_str(&line);
 			}
-			let config = serde_json::from_str(&config_string).unwrap();
-			debug!("Parsed custom config file. Result was {:?}.", config);
-			config
+			let parsed_config = serde_json::from_str(&config_string);
+			if let Ok(correct_config) = parsed_config {
+				debug!("Parsed custom config file successfully.");
+				correct_config
+			} else {
+				let default = RunConfig::default();
+				debug!(
+					"Custom config file contained an error, starting with default config: {}",
+					serde_json::to_string(&default).unwrap()
+				);
+				default
+			}
 		},
 	);
 
