@@ -45,8 +45,11 @@ where
 		positive_feasible && negative_feasible
 	}
 
-	/// This state's `DNF`s.
-	pub fn dnfs(&self) -> Vec<&DNF<SIZE>> { vec![&self.positive_dnf, &self.negative_dnf] }
+	/// A reference to this state's `DNF`s together with a boolean indicating whether it
+	/// is the positive `DNF`.
+	pub fn dnfs(&self) -> Vec<(&DNF<SIZE>, bool)> {
+		vec![(&self.positive_dnf, true), (&self.negative_dnf, false)]
+	}
 
 	/// Whether the state's positive `DNF` is equal to the provided one.
 	pub fn positive_eq(&self, other: &DNF<SIZE>) -> bool { self.positive_dnf == *other }

@@ -1,18 +1,13 @@
 //! Provides neighbourhood generation methods for run state.
 
+use std::collections::HashSet;
 use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::{
-	debug,
-	error,
-};
-use rand::prelude::{
-	IteratorRandom,
-	SliceRandom,
-};
+use log::{debug,};
+use rand::prelude::{SliceRandom,};
 use rand::thread_rng;
 
 use serde::{
@@ -32,12 +27,18 @@ pub enum NeighbourhoodGenerator {
 		neighbourhood_limit: Option<usize>,
 		shuffle:             bool,
 	},
+	RemoveFromAllClauses,
+	InsertOneLiteral {
+		neighbourhood_limit: Option<usize>,
+		shuffle:             bool,
+	},
 	/// Remove all empty clauses.
 	RemoveEmptyClauses,
 }
 
 impl NeighbourhoodGenerator {
 	/// Generates the neighbourhood of the `DNF` according to the generator strategy.
+	#[allow(clippy::too_many_lines)]
 	pub fn generate_neighbourhood<const SIZE: usize>(&self, state: &State<SIZE>) -> Vec<State<SIZE>>
 	where
 		BitsImpl<SIZE>: Bits,
@@ -50,16 +51,16 @@ impl NeighbourhoodGenerator {
 				neighbourhood_limit,
 				shuffle,
 			} => {
-				let mut combinations: Vec<(DNF<SIZE>, Clause<SIZE>, FeatureID)> = state
+				let mut combinations: Vec<((&DNF<SIZE>, bool), Clause<SIZE>, FeatureID)> = state
 					.dnfs()
 					.iter()
-					.flat_map(|&dnf| {
+					.flat_map(|(dnf, which_dnf)| {
 						dnf.clauses().iter().flat_map(|clause| {
 							clause
 								.literal_indices()
 								.iter()
-								.map(|index| (dnf.clone(), *clause, *index))
-								.collect::<Vec<(DNF<SIZE>, Clause<SIZE>, FeatureID)>>()
+								.map(|index| ((*dnf, *which_dnf), *clause, *index))
+								.collect::<Vec<((&DNF<SIZE>, bool), Clause<SIZE>, FeatureID)>>()
 						})
 					})
 					.collect();
@@ -72,10 +73,10 @@ impl NeighbourhoodGenerator {
 					combinations = combinations
 						.choose_multiple(&mut thread_rng(), *limit)
 						.cloned()
-						.collect::<Vec<(DNF<SIZE>, Clause<SIZE>, FeatureID)>>();
+						.collect::<Vec<((&DNF<SIZE>, bool), Clause<SIZE>, FeatureID)>>();
 				}
 
-				for (dnf, mut clause, present_id) in combinations {
+				for ((dnf, which_dnf), mut clause, present_id) in combinations {
 					// Remove the original clause from the DNF …
 					let mut cloned_dnf = dnf.clone();
 					cloned_dnf.remove_clause(&clause);
@@ -85,23 +86,26 @@ impl NeighbourhoodGenerator {
 					cloned_dnf.insert_clause(clause);
 
 					// store the result.
-					let modified_state = if !state.positive_eq(&cloned_dnf) && state.positive_eq(&dnf) {
+					let modified_state = if which_dnf {
 						State {
 							positive_dnf: cloned_dnf,
 							negative_dnf: state.negative_dnf.clone(),
 						}
-					} else if !state.negative_eq(&cloned_dnf) && state.negative_eq(&dnf) {
+					} else {
 						State {
 							positive_dnf: state.positive_dnf.clone(),
 							negative_dnf: cloned_dnf,
 						}
-					} else {
-						error!("Neither the positive nor the negative DNF of the state have been modified!");
-						state.clone()
 					};
 
 					result.push(modified_state);
 				}
+			},
+			NeighbourhoodGenerator::InsertOneLiteral {
+				neighbourhood_limit,
+				shuffle,
+			} => {
+				// TODO for completeness of search space
 			},
 			Self::RemoveEmptyClauses => {
 				// TODO
@@ -111,6 +115,46 @@ impl NeighbourhoodGenerator {
 				// 		cloned_dnf.remove_clause(clause);
 				// 	}
 				//}
+			},
+			NeighbourhoodGenerator::RemoveFromAllClauses => {
+				for (dnf, which_dnf) in state.dnfs() {
+					let indices_present_in_all = dnf.clauses().iter().fold(
+						(0..784).collect::<HashSet<FeatureID>>(),
+						|acc, curr_clause| {
+							let curr_indices = curr_clause
+								.literal_indices()
+								.into_iter()
+								.collect::<HashSet<FeatureID>>();
+							let remaining_indices = acc.intersection(&curr_indices);
+							remaining_indices.copied().collect()
+						},
+					);
+					for index in indices_present_in_all {
+						let cloned_dnf = DNF::new(
+							dnf.clauses()
+								.iter()
+								.copied()
+								.map(|mut clause| {
+									clause.remove_literal(index);
+									clause
+								})
+								.collect(),
+						);
+						let modified_state = if which_dnf {
+							State {
+								positive_dnf: cloned_dnf,
+								negative_dnf: state.negative_dnf.clone(),
+							}
+						} else {
+							State {
+								positive_dnf: state.positive_dnf.clone(),
+								negative_dnf: cloned_dnf,
+							}
+						};
+						result.push(modified_state);
+						result.shuffle(&mut thread_rng());
+					}
+				}
 			},
 		}
 		debug!("Found {} neighbours.", result.len());

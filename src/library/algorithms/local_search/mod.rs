@@ -75,8 +75,8 @@ where
 	let algorithm = run_config.algorithm;
 
 	if let Some(_metrics) = &run_config.metrics {
-		save_metrics(&initial_state, &mut metrics_file, 0, regularizer);
-		generate_pictures(&initial_state, &metrics_path, 0);
+		save_metrics(&initial_state, &mut metrics_file, regularizer, "0");
+		generate_pictures(&initial_state, &metrics_path, "0");
 	}
 
 	let mut algorithm_runner = AlgorithmRunner::new(
@@ -93,16 +93,26 @@ where
 		if let Some(metrics) = &run_config.metrics {
 			let iteration = algorithm_runner.iteration();
 			if iteration % metrics.regularizer_frequency == 0 {
-				save_metrics(&current_state, &mut metrics_file, iteration, regularizer);
+				save_metrics(
+					&current_state,
+					&mut metrics_file,
+					regularizer,
+					iteration.to_string().as_str(),
+				);
 			}
 			if iteration % metrics.picture_frequency == 0 {
-				generate_pictures(&current_state, &metrics_path, iteration);
+				generate_pictures(&current_state, &metrics_path, iteration.to_string().as_str());
 			}
 		}
 
 		if regularizer.regularize(&current_state) < regularizer.regularize(&best_state) {
 			best_state = current_state.clone();
 		}
+	}
+
+	if let Some(_metrics) = &run_config.metrics {
+		save_metrics(&best_state, &mut metrics_file, regularizer, "final");
+		generate_pictures(&best_state, &metrics_path, "final");
 	}
 
 	output_file
@@ -119,7 +129,7 @@ where
 
 /// Creates Visualizations of the current state and saves them under the provided path
 /// with filenames distinguished by the current iteration.
-fn generate_pictures<const SIZE: usize>(state: &State<SIZE>, path: &Path, iteration: u32)
+fn generate_pictures<const SIZE: usize>(state: &State<SIZE>, path: &Path, label: &str)
 where
 	BitsImpl<SIZE>: Bits,
 	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
@@ -128,13 +138,13 @@ where
 		.positive_dnf
 		.to_image(28, 28)
 		.unwrap()
-		.save(path.join(format!("iteration-{}-positive.png", iteration).as_str()))
+		.save(path.join(format!("iteration-{}-positive.png", label).as_str()))
 		.unwrap();
 	state
 		.negative_dnf
 		.to_image(28, 28)
 		.unwrap()
-		.save(path.join(format!("iteration-{}-negative.png", iteration).as_str()))
+		.save(path.join(format!("iteration-{}-negative.png", label).as_str()))
 		.unwrap();
 }
 
@@ -142,8 +152,8 @@ where
 fn save_metrics<const SIZE: usize>(
 	state: &State<SIZE>,
 	metrics_file: &mut File,
-	iteration: u32,
 	regularizer: Regularizer,
+	label: &str,
 ) where
 	BitsImpl<SIZE>: Bits,
 	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
@@ -152,7 +162,7 @@ fn save_metrics<const SIZE: usize>(
 		.write_all(
 			format!(
 				"Iteration: {}: DNF-regularizer value: {}\n",
-				iteration,
+				label,
 				regularizer.regularize(state),
 			)
 			.as_bytes(),

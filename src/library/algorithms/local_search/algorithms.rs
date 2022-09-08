@@ -3,6 +3,11 @@ use bitmaps::{
 	Bits,
 	BitsImpl,
 };
+use log::debug;
+use rand::{
+	Rng,
+	thread_rng,
+};
 use rayon::prelude::*;
 use serde::{
 	Serialize,
@@ -25,6 +30,8 @@ pub enum Algorithm {
 	StochasticHillClimber {
 		/// Abort algorithm after a maximum number of iterations.
 		max_iterations: u32,
+		/// Parameter influencing selection probability
+		selection_prob: f64,
 	},
 }
 
@@ -105,7 +112,34 @@ where
 					return None;
 				}
 			},
-			Algorithm::StochasticHillClimber { .. } => {},
+			Algorithm::StochasticHillClimber {
+				max_iterations,
+				selection_prob,
+			} => {
+				if self.iterations > max_iterations {
+					return None;
+				}
+
+				for neighbour in neighbourhood
+					.filter(|state| state.is_feasible(&self.positive_samples, &self.negative_samples))
+					.collect::<Vec<State<SIZE>>>()
+				{
+					let current_value = self.regularizer.regularize(&self.current_state);
+					let neighbour_value = self.regularizer.regularize(&neighbour);
+
+					let difference = f64::from(neighbour_value) - f64::from(current_value);
+					if difference > 0.0 {
+						debug!("====== Found neighbour worse than current solution =======");
+					}
+
+					let prob = 1.0 / (1.0 + (difference / selection_prob).exp());
+
+					if thread_rng().gen_bool(prob) {
+						self.current_state = neighbour;
+						break;
+					}
+				}
+			},
 		}
 		self.iterations += 1;
 		Some(self.current_state.clone())

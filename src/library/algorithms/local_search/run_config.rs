@@ -28,17 +28,20 @@ impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 	fn default() -> Self {
 		Self {
 			run_count:                1,
-			data_path:                "data/prepared_data.json".to_string(),
+			data_path:                "data/prepared_data_short.json".to_string(),
 			metrics:                  Some(Metrics {
-				picture_frequency:     10,
-				regularizer_frequency: 10,
+				picture_frequency:     50,
+				regularizer_frequency: 50,
 			}),
-			neighbourhood_generators: vec![NeighbourhoodGenerator::RemoveOneLiteral {
-				neighbourhood_limit: None,
-				shuffle:             true,
-			}],
+			neighbourhood_generators: vec![
+				// NeighbourhoodGenerator::RemoveOneLiteral {
+				// 	neighbourhood_limit: Some(100),
+				// 	shuffle:             true,
+				// },
+				NeighbourhoodGenerator::RemoveFromAllClauses,
+			],
 			regularizer:              Regularizer::DepthAndLength,
-			algorithm:                Algorithm::BasicHillClimber { max_iterations: 50 },
+			algorithm:                Algorithm::BasicHillClimber { max_iterations: 1600 },
 		}
 	}
 }
