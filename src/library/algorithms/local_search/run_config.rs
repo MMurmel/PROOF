@@ -33,7 +33,10 @@ impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 				picture_frequency:     10,
 				regularizer_frequency: 10,
 			}),
-			neighbourhood_generators: vec![NeighbourhoodGenerator::RemoveOneLiteral],
+			neighbourhood_generators: vec![NeighbourhoodGenerator::RemoveOneLiteral {
+				neighbourhood_limit: None,
+				shuffle:             true,
+			}],
 			regularizer:              Regularizer::DepthAndLength,
 			algorithm:                Algorithm::BasicHillClimber { max_iterations: 50 },
 		}

@@ -6,7 +6,12 @@
         "regularizer_frequency": 100
     },
     "neighbourhood_generators": [
-        "RemoveOneLiteral"
+        {
+            "RemoveOneLiteral": {
+                "neighbourhood_limit": 100,
+                "shuffle": true
+            }
+        }
     ],
     "regularizer": "DepthAndLength",
     "algorithm": {
