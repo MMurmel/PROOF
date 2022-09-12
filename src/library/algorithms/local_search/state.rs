@@ -35,11 +35,11 @@ where
 		trace!("Starting feasibility testing.");
 		let positive_feasible = positive_samples
 			.par_iter()
-			.map(|x| self.positive_dnf.evaluate(x))
+			.map(|x| self.positive_dnf.evaluate(x) && !self.negative_dnf.evaluate(x))
 			.all(|x| x);
 		let negative_feasible = negative_samples
 			.par_iter()
-			.map(|x| self.negative_dnf.evaluate(x))
+			.map(|x| self.negative_dnf.evaluate(x) && !self.positive_dnf.evaluate(x))
 			.all(|x| x);
 
 		positive_feasible && negative_feasible
