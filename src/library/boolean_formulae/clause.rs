@@ -124,6 +124,9 @@ where
 	#[must_use]
 	pub fn literal_indices(&self) -> Vec<FeatureID> { self.appearances.into_iter().collect() }
 
+	/// Returns a reference to the appearance bitmap of the clause.
+	pub fn appearances(&self) -> &Bitmap<SIZE> { &self.appearances }
+
 	/// Returns the parity of the literal with the specified `FeatureID`.
 	/// If the literal is not present or the id is too big for this clause,
 	/// `None` is returned.
@@ -182,13 +185,17 @@ where
 	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 {
 	fn evaluate(&self, data: &Sample<SIZE>) -> bool {
+		if self.is_empty() {
+			return false;
+		}
+
 		// XOR is a toggled inverter
 		// polarity of atom			| 0 0 1 1
 		// !polarity of atom		| 1 1 0 0
 		// feature assignment		| 0 1 0 1
 		// ===================================
 		// !p.o.a XOR f.a.			| 1 0 0 1
-		let all_evaluated = data.features() ^ !self.polarities.clone();
+		let all_evaluated = data.features() ^ !self.polarities;
 
 		self.appearances
 			.into_iter()
