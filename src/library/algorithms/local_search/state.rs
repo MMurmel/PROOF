@@ -4,14 +4,18 @@ use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::{trace,};
+use serde::{
+	Serialize,
+	Deserialize,
+};
+
 use rayon::prelude::*;
 use crate::boolean_formulae::data::Sample;
 use crate::boolean_formulae::dnf::DNF;
 use crate::boolean_formulae::evaluation::Evaluate;
 
 /// The current state of the algorithm, i.e. the two DNFs.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct State<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,

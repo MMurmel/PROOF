@@ -66,7 +66,7 @@ where
 }
 
 /// Represents a manifestation of the feature space in a bitmap format.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Sample<const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
@@ -105,7 +105,7 @@ where
 	where
 		S: Serializer,
 	{
-		let wrapper = SampleWrapper::from(self.clone());
+		let wrapper = SampleWrapper::from(*self);
 		wrapper.serialize(serializer)
 	}
 }

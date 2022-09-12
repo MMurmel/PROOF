@@ -42,7 +42,7 @@ pub enum Algorithm {
 
 /// Applies the specified `Algorithm` to a state, w.r.t. the samples, neighbourhood
 /// generators and the regularizer.
-pub struct AlgorithmRunner<const SIZE: usize>
+pub struct AlgorithmRunner<'a, const SIZE: usize>
 where
 	BitsImpl<SIZE>: Bits,
 	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
@@ -52,9 +52,9 @@ where
 	/// The current state of the two-DNF-state.
 	current_state:            State<SIZE>,
 	/// All samples for which the positive DNF must be exact.
-	positive_samples:         Vec<Sample<SIZE>>,
+	positive_samples:         &'a [Sample<SIZE>],
 	/// All samples for which the negative DNF must be exact.
-	negative_samples:         Vec<Sample<SIZE>>,
+	negative_samples:         &'a [Sample<SIZE>],
 	/// By which strategy (or strategies) to generate new neighbours.
 	neighbourhood_generators: Vec<NeighbourhoodGenerator>,
 	/// By which strategy to judge feasible solutions.
@@ -63,7 +63,7 @@ where
 	iterations:               u32,
 }
 
-impl<const SIZE: usize> AlgorithmRunner<SIZE>
+impl<'a, const SIZE: usize> AlgorithmRunner<'a, SIZE>
 where
 	BitsImpl<SIZE>: Bits,
 	<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
@@ -72,8 +72,8 @@ where
 	pub fn new(
 		algorithm: Algorithm,
 		initial_state: State<SIZE>,
-		positive_samples: Vec<Sample<SIZE>>,
-		negative_samples: Vec<Sample<SIZE>>,
+		positive_samples: &'a [Sample<SIZE>],
+		negative_samples: &'a [Sample<SIZE>],
 		neighbourhood_generators: Vec<NeighbourhoodGenerator>,
 		regularizer: Regularizer,
 	) -> Self {
@@ -99,13 +99,13 @@ where
 
 		match self.algorithm {
 			Algorithm::BasicHillClimber { max_iterations } => {
-				if self.iterations > max_iterations {
+				if self.iterations >= max_iterations {
 					return None;
 				}
 
 				trace!("Filtering and sorting neighbourhood.");
 				let best_neighbour = neighbourhood
-					.filter(|state| state.is_feasible(&self.positive_samples, &self.negative_samples))
+					.filter(|state| state.is_feasible(self.positive_samples, self.negative_samples))
 					.min_by(|a, b| {
 						self.regularizer
 							.regularize(a)
@@ -128,7 +128,7 @@ where
 				}
 
 				for neighbour in neighbourhood
-					.filter(|state| state.is_feasible(&self.positive_samples, &self.negative_samples))
+					.filter(|state| state.is_feasible(self.positive_samples, self.negative_samples))
 					.collect::<Vec<State<SIZE>>>()
 				{
 					let current_value = self.regularizer.regularize(&self.current_state);
