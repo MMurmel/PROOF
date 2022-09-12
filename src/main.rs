@@ -32,6 +32,7 @@ use std::io::{
 	BufRead,
 	BufReader,
 };
+use std::time::Instant;
 
 use log::{
 	debug,
@@ -52,7 +53,7 @@ fn main() {
 
 	let config: RunConfig<784> = arguments.config.as_deref().map_or_else(
 		|| {
-			debug!("Starting PROOF with default config file.");
+			debug!("No custom config file provided. Starting PROOF with default config file.");
 			RunConfig::default()
 		},
 		|config_path| {
@@ -69,7 +70,7 @@ fn main() {
 			} else {
 				let default = RunConfig::default();
 				debug!(
-					"Custom config file contained an error, starting with default config: {}",
+					"Custom config file contained an error, starting with default config instead: {}",
 					serde_json::to_string(&default).unwrap()
 				);
 				default
@@ -77,5 +78,8 @@ fn main() {
 		},
 	);
 
+	let start_time = Instant::now();
+
 	basic_hill_climber(&config);
+	info!("Program execution took {:?}", start_time.elapsed());
 }

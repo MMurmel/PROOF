@@ -1,8 +1,8 @@
 //! Provides neighbourhood generation methods for run state.
 
-use std::collections::HashSet;
 use std::hash::Hash;
 use bitmaps::{
+	Bitmap,
 	Bits,
 	BitsImpl,
 };
@@ -101,7 +101,7 @@ impl NeighbourhoodGenerator {
 					result.push(modified_state);
 				}
 			},
-			NeighbourhoodGenerator::InsertOneLiteral {
+			Self::InsertOneLiteral {
 				neighbourhood_limit,
 				shuffle,
 			} => {
@@ -116,20 +116,14 @@ impl NeighbourhoodGenerator {
 				// 	}
 				//}
 			},
-			NeighbourhoodGenerator::RemoveFromAllClauses => {
+			Self::RemoveFromAllClauses => {
 				for (dnf, which_dnf) in state.dnfs() {
-					let indices_present_in_all = dnf.clauses().iter().fold(
-						(0..784).collect::<HashSet<FeatureID>>(),
-						|acc, curr_clause| {
-							let curr_indices = curr_clause
-								.literal_indices()
-								.into_iter()
-								.collect::<HashSet<FeatureID>>();
-							let remaining_indices = acc.intersection(&curr_indices);
-							remaining_indices.copied().collect()
-						},
-					);
-					for index in indices_present_in_all {
+					let indices_present_in_all =
+						dnf.clauses().iter().fold(Bitmap::mask(SIZE), |acc, curr_clause| {
+							acc & *curr_clause.appearances()
+						});
+
+					for index in &indices_present_in_all {
 						let cloned_dnf = DNF::new(
 							dnf.clauses()
 								.iter()
