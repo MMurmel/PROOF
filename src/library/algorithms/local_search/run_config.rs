@@ -28,7 +28,7 @@ impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 	fn default() -> Self {
 		Self {
 			run_count:                1,
-			data_path:                "data/prepared_data_short.json".to_string(),
+			data_path:                "data/prepared_data.json".to_string(),
 			metrics:                  Some(Metrics {
 				picture_frequency:     50,
 				regularizer_frequency: 50,

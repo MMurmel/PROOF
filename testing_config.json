@@ -1,14 +1,15 @@
 {
-    "run_count": 1,
-    "data_path": "data/prepared_data_short.json",
+    "run_count": 5,
+    "data_path": "data/prepared_data.json",
     "metrics": {
-        "picture_frequency": 100,
-        "regularizer_frequency": 100
+        "picture_frequency": 50,
+        "regularizer_frequency": 25
     },
     "neighbourhood_generators": [
+        "RemoveFromAllClauses",
         {
             "RemoveOneLiteral": {
-                "neighbourhood_limit": 100,
+                "neighbourhood_limit": 50,
                 "shuffle": true
             }
         }
@@ -16,7 +17,7 @@
     "regularizer": "DepthAndLength",
     "algorithm": {
         "BasicHillClimber": {
-            "max_iterations": 1000
+            "max_iterations": 1600
         }
     }
 }

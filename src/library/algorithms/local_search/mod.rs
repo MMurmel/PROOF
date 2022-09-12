@@ -8,11 +8,11 @@ use std::fs::{
 use std::hash::Hash;
 use std::io::{Write,};
 use std::path::{Path,};
-use std::time::Instant;
 use bitmaps::{
 	Bits,
 	BitsImpl,
 };
+use chrono::Utc;
 use log::{debug,};
 use rayon::prelude::*;
 use crate::algorithms::local_search::algorithms::AlgorithmRunner;
@@ -62,18 +62,26 @@ where
 
 	// Create general output-paths.
 	let output_dir = Path::new("output");
+	let current_time = Utc::now();
+	let run_dir = output_dir.join(format!("{}", current_time.format("%F-%T")));
+	create_dir_all(&run_dir).expect("Could not create output directory for run.");
+	let mut config_write_back =
+		File::create(&run_dir.join("config.json")).expect("Could not create file to write back config to.");
+	config_write_back
+		.write_all(serde_json::to_string(&run_config).unwrap().as_bytes())
+		.expect("Could not write back config.");
 
 	for current_run in 1..=run_config.run_count {
 		debug!("Starting run #{}", current_run);
 		// Create run-specific output directories and files.
-		let run_dir = output_dir.join(format!("run-{}", current_run));
-		create_dir_all(&run_dir)
+		let iteration_dir = run_dir.join(format!("run-{}", current_run));
+		create_dir_all(&iteration_dir)
 			.unwrap_or_else(|_| panic!("Could not create output directory for run {}.", current_run));
-		let metrics_dir = run_dir.join("metrics");
+		let metrics_dir = iteration_dir.join("metrics");
 		create_dir_all(&metrics_dir)
 			.unwrap_or_else(|_| panic!("Could not create metrics directory in run {}.", current_run));
 		let mut output_file =
-			File::create(&run_dir.join("final_state")).expect("Could not create output file.");
+			File::create(&iteration_dir.join("best_state")).expect("Could not create output file.");
 		let mut metrics_file =
 			File::create(&metrics_dir.join("metrics.csv")).expect("Could not create metrics file.");
 
@@ -104,19 +112,22 @@ where
 			regularizer,
 		);
 
-		let time_0 = Instant::now();
+		let mut iteration_time = Utc::now();
 
 		while let Some(current_state) = algorithm_runner.step() {
 			debug!("In Iteration {}", algorithm_runner.iteration());
 			if let Some(metrics) = &run_config.metrics {
 				let iteration = algorithm_runner.iteration();
 				if iteration % metrics.regularizer_frequency == 0 {
+					let current_time = Utc::now();
+					let difference = current_time - iteration_time;
 					save_metrics(
 						&mut metrics_file,
 						iteration.to_string().as_str(),
-						format!("{:?}", time_0.elapsed()).as_str(),
+						format!("{}:{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
 						regularizer.regularize(&current_state).to_string().as_str(),
 					);
+					iteration_time = current_time;
 				}
 				if iteration % metrics.picture_frequency == 0 {
 					generate_pictures(&current_state, &metrics_dir, iteration.to_string().as_str());
@@ -129,10 +140,12 @@ where
 		}
 
 		if let Some(_metrics) = &run_config.metrics {
+			let current_time = Utc::now();
+			let difference = current_time - iteration_time;
 			save_metrics(
 				&mut metrics_file,
 				"final",
-				format!("{:?}", time_0.elapsed()).as_str(),
+				format!("{}:{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
 				regularizer.regularize(&best_state).to_string().as_str(),
 			);
 			generate_pictures(&best_state, &metrics_dir, "final");
