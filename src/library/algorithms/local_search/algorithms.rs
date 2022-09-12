@@ -1,9 +1,14 @@
+//! Provides different local search algorithms and the `AlgorithmRunner` wrapper to run
+//! them all through the same interface.
 use std::hash::Hash;
 use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::debug;
+use log::{
+	debug,
+	trace,
+};
 use rand::{
 	Rng,
 	thread_rng,
@@ -86,6 +91,7 @@ where
 	/// Performs one step of the algorithm and returns its state afterwards.
 	/// Returns None when the algorithm has terminated.
 	pub fn step(&mut self) -> Option<State<SIZE>> {
+		trace!("Start generating neighbourhood.");
 		let neighbourhood = self
 			.neighbourhood_generators
 			.par_iter()
@@ -97,6 +103,7 @@ where
 					return None;
 				}
 
+				trace!("Filtering and sorting neighbourhood.");
 				let best_neighbour = neighbourhood
 					.filter(|state| state.is_feasible(&self.positive_samples, &self.negative_samples))
 					.min_by(|a, b| {

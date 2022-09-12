@@ -32,19 +32,18 @@ use std::io::{
 	BufRead,
 	BufReader,
 };
-use std::time::Instant;
+use std::time::{Instant,};
 
 use log::{
 	debug,
 	info,
 };
-use proof::algorithms::local_search::basic_hill_climber;
+use proof::algorithms::local_search::local_search;
 use proof::algorithms::local_search::run_config::{RunConfig,};
 use proof::arguments::Arguments;
 
 /// ### `main`
 fn main() {
-	info!("Welcome to PROOF.");
 	let arguments = Arguments::cli_args();
 
 	env_logger::Builder::new()
@@ -80,6 +79,7 @@ fn main() {
 
 	let start_time = Instant::now();
 
-	basic_hill_climber(&config);
+	info!("Starting execution of local search algorithm.");
+	local_search(&config);
 	info!("Program execution took {:?}", start_time.elapsed());
 }

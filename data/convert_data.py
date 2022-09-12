@@ -15,8 +15,9 @@ class Sample:
     features: List[bool]
 
 
-def prepare_data(image_file, label_file, out_file, sample_count):
-    with gzip.open(image_file, "rb") as images, gzip.open(label_file, "rb") as labels, open(out_file, "w") as output_file:
+def prepare_data(image_file, label_file, out_file, sample_count, out_file_short, short_sample_count):
+    with gzip.open(image_file, "rb") as images, gzip.open(label_file, "rb") as labels, \
+        open(out_file, "w") as output_file, open(out_file_short, "w") as output_file_short:
         # Skip header data
         images.read(16)
         labels.read(8)
@@ -29,13 +30,13 @@ def prepare_data(image_file, label_file, out_file, sample_count):
             # labels other than 1 and 7 can be ignored
             if label != 1 and label != 7:
                 # skip bytes in image file accordingly
-                images.read(28*28)
+                images.read(28 * 28)
                 continue
             # convert label to boolean
             label = (label == 1)
             # read features
             features = []
-            for j in range(28*28):
+            for j in range(28 * 28):
                 pixel = ord(images.read(1))
                 pixel = (pixel >= 128)
                 features.append(pixel)
@@ -43,18 +44,15 @@ def prepare_data(image_file, label_file, out_file, sample_count):
             sample = Sample(label=label, features=features)
             output.append(sample)
 
-        for s in output:
-            output_file.write(to_json(s) + "\n")
-        # TODO
-        #output_file.write(to_json(output))
+        # for s in output:
+        #    output_file.write(to_json(s) + "\n")
+        output_file.write(to_json(output))
+        output_file_short.write(to_json(output[0:short_sample_count]))
 
 
 prepare_data("original/t10k-images-idx3-ubyte.gz",
              "original/t10k-labels-idx1-ubyte.gz",
              "prepared_data.json",
-             10000)
-
-with open("prepared_data.json") as whole_file, open("prepared_data_short.json", "w") as short_file:
-    for _ in range(10):
-        line = next(whole_file).strip()
-        short_file.write(line + "\n")
+             10000,
+             "prepared_data_short.json",
+             30)

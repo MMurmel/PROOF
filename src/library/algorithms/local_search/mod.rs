@@ -1,24 +1,18 @@
 //! This module provides the actual local search algorithms of this project.
 
+use std::fs;
 use std::fs::{
 	create_dir_all,
 	File,
 };
 use std::hash::Hash;
-use std::io::{
-	BufRead,
-	BufReader,
-	Write,
-};
+use std::io::{Write,};
 use std::path::{Path,};
 use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::{
-	debug,
-	info,
-};
+use log::{debug,};
 use rayon::prelude::*;
 use crate::algorithms::local_search::algorithms::AlgorithmRunner;
 use crate::algorithms::local_search::regularizer::Regularizer;
@@ -38,13 +32,11 @@ mod algorithms;
 /// A basic hill climber
 ///
 /// # Panics
-pub fn basic_hill_climber<const DATA_DIM: usize>(run_config: &RunConfig<DATA_DIM>)
+pub fn local_search<const DATA_DIM: usize>(run_config: &RunConfig<DATA_DIM>)
 where
 	BitsImpl<DATA_DIM>: Bits,
 	<BitsImpl<{ DATA_DIM }> as Bits>::Store: Hash,
 {
-	debug!("Starting local search with config {:?}", run_config);
-
 	let output_path = Path::new("output");
 	let metrics_path = output_path.join("metrics");
 	create_dir_all(&metrics_path).expect("Could not create output directory.");
@@ -52,14 +44,14 @@ where
 	let mut metrics_file =
 		File::create(&metrics_path.join("metrics")).expect("Could not create metrics file.");
 
-	let data_file =
-		File::open(Path::new(&run_config.data_path)).expect("Could not open the data file you provided.");
 	let (positive_samples, negative_samples): (Vec<Sample<DATA_DIM>>, Vec<Sample<DATA_DIM>>) =
-		BufReader::new(data_file)
-			.lines()
-			.filter_map(Result::ok)
-			.filter_map(|line| serde_json::from_str(&line).ok())
-			.partition(Sample::label);
+		serde_json::from_str::<Vec<Sample<DATA_DIM>>>(
+			&fs::read_to_string(Path::new(&run_config.data_path))
+				.expect("Could not read from the provided datafile."),
+		)
+		.expect("The datafile could be read, but it contained an error and could not be parsed to Samples.")
+		.into_iter()
+		.partition(Sample::label);
 
 	let positive_dnf = DNF::new(positive_samples.par_iter().map(Clause::from).collect());
 	let negative_dnf = DNF::new(negative_samples.par_iter().map(Clause::from).collect());
@@ -89,7 +81,7 @@ where
 	);
 
 	while let Some(current_state) = algorithm_runner.step() {
-		info!("In Iteration {}", algorithm_runner.iteration());
+		debug!("In Iteration {}", algorithm_runner.iteration());
 		if let Some(metrics) = &run_config.metrics {
 			let iteration = algorithm_runner.iteration();
 			if iteration % metrics.regularizer_frequency == 0 {

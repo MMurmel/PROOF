@@ -6,7 +6,7 @@ use bitmaps::{
 	Bits,
 	BitsImpl,
 };
-use log::{debug,};
+use log::{trace,};
 use rand::prelude::{SliceRandom,};
 use rand::thread_rng;
 
@@ -24,12 +24,22 @@ use crate::boolean_formulae::dnf::DNF;
 pub enum NeighbourhoodGenerator {
 	/// Remove one literal.
 	RemoveOneLiteral {
+		/// Truncates the generated neighbourhood to the provided size.
 		neighbourhood_limit: Option<usize>,
+		/// Shuffles the generated neighbourhood,
+		/// introduces randomness,
+		/// you most likely want this to be `True`.
 		shuffle:             bool,
 	},
+	/// Removes literals of one `FeatureID` from all clauses.
 	RemoveFromAllClauses,
+	/// Inserts one literal into a clause.
 	InsertOneLiteral {
+		/// Truncates the generated neighbourhood to the provided size.
 		neighbourhood_limit: Option<usize>,
+		/// Shuffles the generated neighbourhood,
+		/// introduces randomness,
+		/// you most likely want this to be `True`.
 		shuffle:             bool,
 	},
 	/// Remove all empty clauses.
@@ -44,7 +54,6 @@ impl NeighbourhoodGenerator {
 		BitsImpl<SIZE>: Bits,
 		<BitsImpl<{ SIZE }> as Bits>::Store: Hash,
 	{
-		debug!("Started generating neighbourhood.");
 		let mut result: Vec<State<SIZE>> = Vec::new();
 		match self {
 			Self::RemoveOneLiteral {
@@ -100,6 +109,7 @@ impl NeighbourhoodGenerator {
 
 					result.push(modified_state);
 				}
+				trace!("Found {} neighbours by RemoveOneLiteral.", result.len());
 			},
 			Self::InsertOneLiteral {
 				neighbourhood_limit,
@@ -149,9 +159,9 @@ impl NeighbourhoodGenerator {
 						result.shuffle(&mut thread_rng());
 					}
 				}
+				trace!("Found {} neighbours by RemoveFromAllClauses.", result.len());
 			},
 		}
-		debug!("Found {} neighbours.", result.len());
 		result
 	}
 }

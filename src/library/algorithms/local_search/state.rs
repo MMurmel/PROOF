@@ -32,7 +32,6 @@ where
 	/// i.e. the positive and negative DNF exactly classify the positive and negative
 	/// samples, respectively.
 	pub fn is_feasible(&self, positive_samples: &[Sample<SIZE>], negative_samples: &[Sample<SIZE>]) -> bool {
-		trace!("Starting feasibility testing.");
 		let positive_feasible = positive_samples
 			.par_iter()
 			.map(|x| self.positive_dnf.evaluate(x) && !self.negative_dnf.evaluate(x))
