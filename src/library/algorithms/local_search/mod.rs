@@ -60,11 +60,25 @@ where
 		negative_dnf,
 	};
 
-	// Create general output-paths.
+	// Create general output-paths and write backs to easier reconstruct the run.
 	let output_dir = Path::new("output");
 	let current_time = Utc::now();
 	let run_dir = output_dir.join(format!("{}", current_time.format("%F-%T")));
+	let data_dir = run_dir.join("data");
 	create_dir_all(&run_dir).expect("Could not create output directory for run.");
+	create_dir_all(&data_dir).expect("Could not create dir to write back data");
+	for (index, sample) in positive_samples
+		.iter()
+		.enumerate()
+		.chain(negative_samples.iter().enumerate())
+	{
+		let label = if sample.label() { "positive" } else { "negative" };
+		sample
+			.to_image(28, 28)
+			.unwrap()
+			.save(data_dir.join(format!("{}-sample-{}.png", label, index + 1).as_str()))
+			.unwrap();
+	}
 	let mut config_write_back =
 		File::create(&run_dir.join("config.json")).expect("Could not create file to write back config to.");
 	config_write_back
@@ -81,7 +95,7 @@ where
 		create_dir_all(&metrics_dir)
 			.unwrap_or_else(|_| panic!("Could not create metrics directory in run {}.", current_run));
 		let mut output_file =
-			File::create(&iteration_dir.join("best_state")).expect("Could not create output file.");
+			File::create(&iteration_dir.join("best_state.json")).expect("Could not create output file.");
 		let mut metrics_file =
 			File::create(&metrics_dir.join("metrics.csv")).expect("Could not create metrics file.");
 

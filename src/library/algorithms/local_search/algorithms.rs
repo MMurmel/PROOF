@@ -104,7 +104,7 @@ where
 				}
 
 				trace!("Filtering and sorting neighbourhood.");
-				let best_neighbour = neighbourhood
+				let mut best_neighbour = neighbourhood
 					.filter(|state| state.is_feasible(self.positive_samples, self.negative_samples))
 					.min_by(|a, b| {
 						self.regularizer
@@ -114,6 +114,7 @@ where
 				if self.regularizer.regularize(&best_neighbour)
 					< self.regularizer.regularize(&self.current_state)
 				{
+					best_neighbour.remove_empty_clauses();
 					self.current_state = best_neighbour;
 				} else {
 					return None;

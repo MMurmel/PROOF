@@ -20,6 +20,8 @@ will be converted to `false`, while every pixel with brightness `>=128` will be 
 We don't need much data for this, especially not the whole training set of 60k images MNist provides.
 Therefore, we will only use the test set of 10k images and filter it for ones and sevens.
 This results in `1135` images depicting a one and `1028` images depicting a seven.
+However, after improving running time many times, this is still too much data for the algorithms to run efficiently.
+Instead, only `15` images of each number will be used.
 
 Most significantly, perhaps, is the change from binary to plaintext data in json format,
 simplifying access for the programmer.
@@ -30,5 +32,4 @@ e.g. `{"label":false,"features":[true,true,false]}`.
 In order to (re)create the data used for this project
 you must create an anaconda environment from the `environment.yaml`
 and execute the `convert_data.py` from within the `data` directory.
-This creates a `prepared_data.json` containing all adequate samples from the dataset,
-and a `prepared_data_short.json` containing only the first 10 samples for testing purposes.
+This creates a `prepared_data.json` containing the first `15` adequate samples from the dataset.

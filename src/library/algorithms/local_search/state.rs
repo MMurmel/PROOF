@@ -48,6 +48,20 @@ where
 		positive_feasible && negative_feasible
 	}
 
+	/// Removes empty clauses from the `DNF`s of the state.
+	pub fn remove_empty_clauses(&mut self) {
+		for clause in self.positive_dnf.clauses().clone() {
+			if clause.is_empty() {
+				self.positive_dnf.remove_clause(&clause);
+			}
+		}
+		for clause in self.negative_dnf.clauses().clone() {
+			if clause.is_empty() {
+				self.negative_dnf.remove_clause(&clause);
+			}
+		}
+	}
+
 	/// A reference to this state's `DNF`s together with a boolean indicating whether it
 	/// is the positive `DNF`.
 	pub fn dnfs(&self) -> Vec<(&DNF<SIZE>, bool)> {

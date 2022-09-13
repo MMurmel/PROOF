@@ -15,15 +15,15 @@ class Sample:
     features: List[bool]
 
 
-def prepare_data(image_file, label_file, sample_count, out_file_short, short_sample_count):
-    with gzip.open(image_file, "rb") as images, gzip.open(label_file, "rb") as labels, open(out_file_short, "w") as output_file_short:
+def prepare_data(image_file, label_file, out_file, sample_count, out_file_short, sample_count_short):
+    with gzip.open(image_file, "rb") as images, gzip.open(label_file, "rb") as labels, open(out_file, "w") as output_file, open(out_file_short, "w") as output_file_short:
         # Skip header data
         images.read(16)
         labels.read(8)
 
         output = []
 
-        for i in range(sample_count):
+        for i in range(10000):
             # read label
             label = ord(labels.read(1))
             # labels other than 1 and 7 can be ignored
@@ -43,11 +43,13 @@ def prepare_data(image_file, label_file, sample_count, out_file_short, short_sam
             sample = Sample(label=label, features=features)
             output.append(sample)
 
-        output_file_short.write(to_json(output[0:short_sample_count]))
+        output_file.write(to_json(output[0:sample_count]))
+        output_file_short.write(to_json(output[0:sample_count_short]))
 
 
 prepare_data("original/t10k-images-idx3-ubyte.gz",
              "original/t10k-labels-idx1-ubyte.gz",
-             10000,
              "prepared_data.json",
-             30)
+             30,
+             "prepared_data_short.json",
+             10)
