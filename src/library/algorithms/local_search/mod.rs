@@ -140,15 +140,16 @@ where
 		}
 
 		if let Some(_metrics) = &run_config.metrics {
+			let iteration = algorithm_runner.iteration().to_string();
 			let current_time = Utc::now();
 			let difference = current_time - iteration_time;
 			save_metrics(
 				&mut metrics_file,
-				"final",
+				&iteration,
 				format!("{}:{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
 				regularizer.regularize(&best_state).to_string().as_str(),
 			);
-			generate_pictures(&best_state, &metrics_dir, "final");
+			generate_pictures(&best_state, &metrics_dir, &iteration);
 		}
 
 		output_file
