@@ -114,7 +114,7 @@ impl NeighbourhoodGenerator {
 				if let Some(limit) = neighbourhood_limit {
 					combinations = combinations
 						.choose_multiple(&mut thread_rng(), *limit)
-						.cloned()
+						.copied()
 						.collect::<Vec<((&DNF<SIZE>, bool), Clause<SIZE>, FeatureID)>>();
 				}
 
