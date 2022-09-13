@@ -127,6 +127,9 @@ where
 	/// Returns a reference to the appearance bitmap of the clause.
 	pub fn appearances(&self) -> &Bitmap<SIZE> { &self.appearances }
 
+	/// Returns a reference to the polarities bitmap of the clause.
+	pub fn polarities(&self) -> &Bitmap<SIZE> { &self.polarities }
+
 	/// Returns the parity of the literal with the specified `FeatureID`.
 	/// If the literal is not present or the id is too big for this clause,
 	/// `None` is returned.

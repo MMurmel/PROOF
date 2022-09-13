@@ -38,7 +38,9 @@ impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 				// 	neighbourhood_limit: Some(100),
 				// 	shuffle:             true,
 				// },
-				NeighbourhoodGenerator::RemoveFromAllClauses,
+				NeighbourhoodGenerator::RemoveFromAllClauses {
+					only_same_polarities: true,
+				},
 			],
 			regularizer:              Regularizer::DepthAndLength,
 			algorithm:                Algorithm::BasicHillClimber { max_iterations: 1600 },
