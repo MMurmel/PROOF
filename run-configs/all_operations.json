@@ -1,0 +1,29 @@
+{
+    "comment": "With all neighbourhood operation.",
+    "run_count": 3,
+    "data_path": "data/prepared_data.json",
+    "metrics": {
+        "picture_frequency": 100,
+        "regularizer_frequency": 25
+    },
+    "neighbourhood_generators": [
+        {
+            "RemoveOneLiteral": {
+                "neighbourhood_limit": 50,
+                "shuffle": true
+            }
+        },
+        {
+            "RemoveFromAllClauses": {
+                "only_same_polarities": true
+            }
+        },
+        "InsertOneRemoveElsewhere"
+    ],
+    "regularizer": "DepthAndLength",
+    "algorithm": {
+        "BasicHillClimber": {
+            "max_iterations": 10000
+        }
+    }
+}

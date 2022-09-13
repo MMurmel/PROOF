@@ -16,6 +16,11 @@ pub struct Arguments {
 	/// Sets a custom config file
 	#[clap(short, long, value_parser, value_name = "FILE")]
 	pub config: Option<PathBuf>,
+
+	/// Abort program after trying to parse custom config file.
+	#[clap(short = 'C', long)]
+	#[clap(parse(from_flag))]
+	pub syntax_check: bool,
 }
 
 impl Arguments {

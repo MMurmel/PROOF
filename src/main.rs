@@ -77,6 +77,10 @@ fn main() {
 		},
 	);
 
+	if arguments.syntax_check {
+		return;
+	}
+
 	let start_time = Instant::now();
 
 	info!("Starting execution of local search algorithm.");
