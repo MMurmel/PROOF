@@ -8,7 +8,10 @@ use bitmaps::{
 };
 use log::{trace,};
 use rand::prelude::{SliceRandom,};
-use rand::thread_rng;
+use rand::{
+	Rng,
+	thread_rng,
+};
 
 use serde::{
 	Serialize,
@@ -141,7 +144,7 @@ impl NeighbourhoodGenerator {
 				for (dnf, which_dnf) in state.dnfs() {
 					let (mut indices_present_in_all, positive_in_all, negative_in_all_inverted) =
 						dnf.clauses().iter().fold(
-							(Bitmap::mask(SIZE), Bitmap::mask(SIZE), Bitmap::new()),
+							(!Bitmap::new(), !Bitmap::new(), Bitmap::new()),
 							|(acc, positives_same, negatives_same), curr_clause| {
 								(
 									acc & *curr_clause.appearances(),
@@ -168,12 +171,53 @@ impl NeighbourhoodGenerator {
 						);
 						let modified_state = Self::create_modified_state(state, cloned_dnf, which_dnf);
 						result.push(modified_state);
-						result.shuffle(&mut thread_rng());
 					}
 				}
+				result.shuffle(&mut thread_rng());
 				trace!("Found {} neighbours by RemoveFromAllClauses.", result.len());
 			},
-			NeighbourhoodGenerator::InsertOneRemoveElsewhere => {},
+			Self::InsertOneRemoveElsewhere => {
+				let mut rng = thread_rng();
+				for (dnf, which_dnf) in state.dnfs() {
+					let not_present_in_all: Bitmap<SIZE> =
+						!dnf.clauses().iter().fold(!Bitmap::new(), |acc, curr_clause| {
+							acc & *curr_clause.appearances()
+						});
+					for index in &not_present_in_all {
+						// FIXES A BUG IN THE bitmaps CRATE!
+						if index >= SIZE {
+							continue;
+						}
+						let mut inserted = false;
+						let cloned_dnf = DNF::new(
+							dnf.clauses()
+								.iter()
+								.copied()
+								.map(|mut clause| {
+									// Literal is not present:
+									if clause.literal_at(index) == None {
+										// If no literal was inserted before, insert a
+										// random one and let no others be inserted anymore.
+										if !inserted {
+											inserted = true;
+											clause.insert_literal(index, rng.gen_bool(0.5));
+										}
+									} else {
+										// Literal was present: remove it.
+										clause.remove_literal(index);
+									}
+									clause
+								})
+								.collect(),
+						);
+
+						let modified_state = Self::create_modified_state(state, cloned_dnf, which_dnf);
+						result.push(modified_state);
+					}
+				}
+				result.shuffle(&mut rng);
+				trace!("Found {} neighbours by InsertOneRemoveElsewhere.", result.len());
+			},
 		}
 		result
 	}
