@@ -1,4 +1,5 @@
 {
+    "comment": "Just a testing config.",
     "run_count": 1,
     "data_path": "data/prepared_data.json",
     "metrics": {
