@@ -10,6 +10,8 @@ use crate::algorithms::local_search::algorithms::Algorithm;
 /// Holds information about all possibly configurable parameters of a run.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RunConfig<const DATA_DIM: usize> {
+	/// Can be used to show what was intended with this run config.
+	comment:                      String,
 	/// How often this configuration should be run.
 	pub run_count:                u32,
 	/// The path to the data sample file.
@@ -27,6 +29,7 @@ pub struct RunConfig<const DATA_DIM: usize> {
 impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 	fn default() -> Self {
 		Self {
+			comment:                  "The default config.".to_string(),
 			run_count:                1,
 			data_path:                "data/prepared_data.json".to_string(),
 			metrics:                  Some(Metrics {
@@ -34,16 +37,18 @@ impl<const DATA_DIM: usize> Default for RunConfig<DATA_DIM> {
 				regularizer_frequency: 50,
 			}),
 			neighbourhood_generators: vec![
-				// NeighbourhoodGenerator::RemoveOneLiteral {
-				// 	neighbourhood_limit: Some(100),
-				// 	shuffle:             true,
-				// },
+				NeighbourhoodGenerator::RemoveOneLiteral {
+					neighbourhood_limit: Some(100),
+					shuffle:             true,
+				},
 				NeighbourhoodGenerator::RemoveFromAllClauses {
 					only_same_polarities: true,
 				},
 			],
 			regularizer:              Regularizer::DepthAndLength,
-			algorithm:                Algorithm::BasicHillClimber { max_iterations: 1600 },
+			algorithm:                Algorithm::BasicHillClimber {
+				max_iterations: 10000,
+			},
 		}
 	}
 }
