@@ -138,7 +138,7 @@ where
 					save_metrics(
 						&mut metrics_file,
 						iteration.to_string().as_str(),
-						format!("{}:{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
+						format!("{}.{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
 						regularizer.regularize(&current_state).to_string().as_str(),
 					);
 					iteration_time = current_time;
@@ -160,7 +160,7 @@ where
 			save_metrics(
 				&mut metrics_file,
 				&iteration,
-				format!("{}:{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
+				format!("{}.{}", difference.num_seconds(), difference.num_milliseconds()).as_str(),
 				regularizer.regularize(&best_state).to_string().as_str(),
 			);
 			generate_pictures(&best_state, &metrics_dir, &iteration);
