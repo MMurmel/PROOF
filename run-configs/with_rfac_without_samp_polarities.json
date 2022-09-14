@@ -1,6 +1,6 @@
 {
     "comment": "RFAC can be used on literals with different polarities.",
-    "run_count": 3,
+    "run_count": 10,
     "data_path": "data/prepared_data.json",
     "metrics": {
         "picture_frequency": 100,
