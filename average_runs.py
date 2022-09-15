@@ -6,14 +6,29 @@ import os
 import matplotlib.pyplot as plt
 
 # How many runs should be averaged over.
-runcount = 5
+runcount = 10
+missing = 0
 
 # The base folder of the run.
 base_dir = sys.argv[1]
+
+# An optional headline for the plots of a run
+headline = ""
+with open(os.path.join(base_dir, "headline",), "r") as headline_file:
+    headline = str(headline_file.read()).rstrip()
+
+
 files = []
 # Add all the run CSVs.
 for i in range(1,runcount+1):
-    files.append(open(os.path.join(base_dir, f"run-{i}/metrics/metrics.csv"), "r"))
+    try:
+        files.append(open(os.path.join(base_dir, f"run-{i}/metrics/metrics.csv"), "r"))
+    except:
+        print(f"Could not find metrics file for run {i}")
+        missing += 1
+
+runcount -= missing
+print(f"Found metrics of {runcount} runs. Starting averaging.")
 
 # Where the averaged metrics will be outputted.
 file_a = (os.path.join(base_dir, "average_metrics.csv"))
@@ -40,6 +55,13 @@ iterations = columns[0]
 times = columns[1]
 values = columns[2]
 
+# Accumulate times:
+acc_t = 0
+times_acc = []
+for i in range(len(times)):
+    acc_t += times[i]
+    times_acc.append(acc_t)
+
 # TODO write back averaged data
 #with open(file_a, "w") as fa:
 
@@ -48,26 +70,111 @@ font = {'family': 'DejaVu Sans',
         'weight': 'medium',
         'size': 15,
         }
-# Time per iteration
-plt.plot(iterations, times)
-plt.title("Run time", fontdict=font)
+time_color = "#bccf02"
+value_color= "#03305d"
+
+# Time per iteration relative
+plt.title(f"{headline}", fontdict=font)
 plt.xlabel("Iteration", fontdict=font)
-plt.ylabel("time (s)", fontdict=font)
-plt.subplots_adjust(left=0.15)
+
+plt.plot(iterations, times, color=time_color, label="iteration time / s")
+
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(base_dir, "time_rel.jpg"), dpi=200)
 plt.show()
 
-# Regularizer value per iteration
-plt.plot(iterations, values, color="red")
-plt.title("Decrease in Regularization Value", fontdict=font)
+# Time per iteration absolute
+plt.title(f"{headline}", fontdict=font)
 plt.xlabel("Iteration", fontdict=font)
-plt.ylabel("R", fontdict=font)
-plt.subplots_adjust(left=0.15)
+
+plt.plot(iterations, times, color=time_color, label="iteration time / s")
+
+plt.ylim(0,25)
+plt.xlim(-100,10100)
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(base_dir, "time_abs.jpg"), dpi=200)
 plt.show()
 
-# Together
+# Time accumulated relative
+plt.title(f"{headline}", fontdict=font)
+plt.xlabel("Iteration", fontdict=font)
+
+plt.plot(iterations, times_acc, color=time_color, label="total time / s")
+
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(base_dir, "time_acc_rel.jpg"), dpi=200)
+plt.show()
+
+# Time accumulated absolute
+plt.title(f"{headline}", fontdict=font)
+plt.xlabel("Iteration", fontdict=font)
+
+plt.plot(iterations, times_acc, color=time_color, label="total time / s")
+
+plt.ylim(0,1000)
+plt.xlim(-100,10100)
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(base_dir, "time_acc_abs.jpg"), dpi=200)
+plt.show()
+
+# Regularizer value relative
+plt.title(f"{headline}", fontdict=font)
+plt.xlabel("Iteration", fontdict=font)
+
+plt.plot(iterations, values, color=value_color, label="regularization value")
+
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(base_dir, "value_rel.jpg"), dpi=200)
+plt.show()
+
+# Regularizer value absolute
+plt.title(f"{headline}", fontdict=font)
+plt.xlabel("Iteration", fontdict=font)
+
+plt.plot(iterations, values, color=value_color, label="regularization value")
+
+plt.ylim(0,25500)
+plt.xlim(-100,10100)
+plt.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(base_dir, "value_abs.jpg"), dpi=200)
+plt.show()
+
+# Together relative
+plt.xlabel("Iteration", fontdict=font)
+
 fig, ax1 = plt.subplots()
-ax1.plot(iterations, times)
+fig.suptitle(f"{headline}", fontdict=font)
 ax2 = ax1.twinx()
-ax2.plot(iterations, values, color="red")
-fig.tight_layout()
-plt.show()
+
+p1, = ax1.plot(iterations, times, color=time_color, label="iteration time / s")
+p2, = ax2.plot(iterations, values, color=value_color, label="regularization value")
+ax1.legend(handles=[p1,p2])
+ax1.tick_params(axis='y', colors=time_color)
+ax2.tick_params(axis='y', colors=value_color)
+
+fig.savefig(os.path.join(base_dir, "both_rel.jpg"), dpi=200)
+
+# Together absolute
+plt.xlabel("Iteration", fontdict=font)
+
+fig, ax1 = plt.subplots()
+fig.suptitle(f"{headline}", fontdict=font)
+ax2 = ax1.twinx()
+
+p1, = ax1.plot(iterations, times, color=time_color, label="iteration time / s")
+p2, = ax2.plot(iterations, values, color=value_color, label="regularization value")
+ax1.legend(handles=[p1,p2])
+ax1.tick_params(axis='y', colors=time_color)
+ax2.tick_params(axis='y', colors=value_color)
+ax1.set_ylim(0,25)
+ax2.set_ylim(0,25500)
+plt.xlim(-100,10100)
+
+fig.savefig(os.path.join(base_dir, "both_abs.jpg"), dpi=200)
+fig.show()
